@@ -3,10 +3,11 @@ import { getClient } from '../lib/revealClient';
 import { useApp, estimateTokens } from '../lib/appContext';
 import { md } from '../lib/md';
 import { titleFrom, uid, type ChatMessage } from '../lib/conversations';
-import { MODELS } from '../lib/models';
+import { useAiSettings } from '../lib/aiSettings';
+import { providerLabel } from '../lib/setup';
 import { InlineChart } from './InlineChart';
 import { clearAll } from '../lib/storage';
-import { Sparkles, ArrowUp, ChevronDown, RotateCcw, Lightbulb, LayoutDashboard } from 'lucide-react';
+import { Sparkles, ArrowUp, RotateCcw, Lightbulb, LayoutDashboard } from 'lucide-react';
 
 interface StreamState {
   html: string;
@@ -90,8 +91,8 @@ function MessageRow({
 }
 
 export function ConversationView() {
-  const { active, updateActive, dataset, model, setModel, usageTokens, addTokens, openPanel } =
-    useApp();
+  const { active, updateActive, dataset, usageTokens, addTokens, openPanel } = useApp();
+  const { status, openSettings } = useAiSettings();
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [stream, setStream] = useState<StreamState | null>(null);
@@ -122,7 +123,7 @@ export function ConversationView() {
         message: q,
         datasourceId: dataset.datasourceId,
         dashboard: baseDashboard,
-        model,
+        model: status?.model ?? undefined,
         stream: true,
       });
       s.on('progress', (m: string) => {
@@ -174,7 +175,7 @@ export function ConversationView() {
       const s = await getClient().ai.insights.get({
         dashboard: dashboardJson,
         type: 'summary',
-        model,
+        model: status?.model ?? undefined,
         stream: true,
       });
       s.on('progress', (m: string) => {
@@ -214,20 +215,15 @@ export function ConversationView() {
       <header className="flex h-12 items-center gap-3 border-b border-slate-200 px-5">
         <span className="truncate text-sm font-medium text-slate-800">{active?.title ?? 'New chat'}</span>
         <span className="flex-1" />
-        <div className="relative">
-          <select
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            className="appearance-none rounded-lg border border-slate-200 bg-white py-1.5 pl-3 pr-8 text-xs font-medium text-slate-700 outline-none hover:border-slate-300 focus:border-violet-400"
-          >
-            {MODELS.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-        </div>
+        <button
+          onClick={openSettings}
+          title="AI provider & model — click to change"
+          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-violet-300 hover:text-violet-700"
+        >
+          {providerLabel(status?.provider ?? 'OpenAI')}
+          <span className="text-slate-400"> · </span>
+          {status?.model ?? status?.deployment ?? '—'}
+        </button>
         <span
           className="hidden rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500 sm:inline"
           title="Client-side estimate; production metering uses the SDK's usage events"

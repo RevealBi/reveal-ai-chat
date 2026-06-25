@@ -34,19 +34,22 @@ string? license = Pick(builder.Configuration["Reveal:License"],
                        saved.RevealLicense);
 var nativeLicense = File.Exists(Path.Combine(
     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".revealbi-sdk", "license.key"));
-// Full mode is gated on the LICENSE only. The AI provider / model / key are RUNTIME
-// settings (swappable in the in-app Settings dialog with no restart) — seeded here from
-// config or the encrypted store, then read live by RuntimeAiProvider on every call.
-var runtimeAi = new RuntimeAiSettings(new AppKeys
+// The AI provider + key are captured in the same first-run setup dialog as the license and
+// applied at startup (the SDK configures the provider during boot). Resolve them from config
+// or the encrypted store. Provider = "OpenAI" | "Anthropic" | "AzureOpenAI".
+var aiKeys = new AppKeys
 {
-    Provider = builder.Configuration["RevealAI:Provider"] ?? saved.Provider ?? "OpenAI",
-    Model = builder.Configuration["RevealAI:OpenAI:Model"] ?? saved.Model ?? "gpt-4.1",
-    ApiKey = Pick(builder.Configuration["RevealAI:OpenAI:ApiKey"], saved.ApiKey),
-    Endpoint = builder.Configuration["RevealAI:OpenAI:Endpoint"] ?? saved.Endpoint,
-});
-builder.Services.AddSingleton(runtimeAi);
+    Provider   = Pick(builder.Configuration["RevealAI:Provider"], saved.Provider) ?? "OpenAI",
+    Model      = Pick(builder.Configuration["RevealAI:Model"], saved.Model),
+    ApiKey     = Pick(builder.Configuration["RevealAI:ApiKey"], saved.ApiKey),
+    Endpoint   = Pick(builder.Configuration["RevealAI:Endpoint"], saved.Endpoint),
+    Deployment = Pick(builder.Configuration["RevealAI:Deployment"], saved.Deployment),
+};
 
-var configured = !string.IsNullOrWhiteSpace(license) || nativeLicense;
+var haveLicense = !string.IsNullOrWhiteSpace(license) || nativeLicense;
+var haveAiKey = !string.IsNullOrWhiteSpace(aiKeys.ApiKey);
+// Full mode needs BOTH a Reveal license and an AI provider key.
+var configured = haveLicense && haveAiKey;
 var licenseError = false;
 
 var mvc = builder.Services.AddControllers(); // always — discovers SetupController
@@ -65,17 +68,26 @@ if (configured)
                 rb.AddSettings(s => s.License = license); // else the SDK reads its native file
         });
 
-        // -- Reveal AI: ONE governed engine behind Chat (Ask) AND Insights (Explain) ----
-        // BYO key: the SDK calls YOUR model with YOUR key; it only ever sees governed query
-        // results, never raw rows or SQL.
-        var ai = builder.Services.AddRevealAI()
+        // -- Reveal AI: ONE governed engine behind Chat (Ask) and Insights (Explain) --------
+        // The chosen provider is wired with the SDK's own built-in extension — that single call
+        // is the whole integration. Only the active provider is configured; switching providers
+        // re-runs this at startup (the setup dialog restarts the app).
+        var revealAi = builder.Services.AddRevealAI()
             .UseMetadataCatalogFile(Path.Combine(builder.Environment.ContentRootPath, "Reveal", "Metadata", "catalog.json"));
 
-        // A single runtime provider, registered under the default key ("openai"). It reads
-        // the live RuntimeAiSettings on EVERY call, so the Settings dialog can change the
-        // provider / model / key at runtime with no restart. OpenAI here also covers local /
-        // OpenAI-compatible endpoints (Ollama, LM Studio, vLLM).
-        ai.AddProvider("openai", sp => new RuntimeAiProvider(sp.GetRequiredService<RuntimeAiSettings>()));
+        switch ((aiKeys.Provider ?? "OpenAI").ToLowerInvariant())
+        {
+            case "anthropic":
+                revealAi.AddAnthropic(s => { s.ApiKey = aiKeys.ApiKey!; s.Model = aiKeys.Model ?? "claude-sonnet-4-6"; s.MaxTokens = 8000; });
+                break;
+            case "azureopenai":
+            case "azure":
+                revealAi.AddAzureOpenAI(s => { s.ApiKey = aiKeys.ApiKey!; s.Endpoint = aiKeys.Endpoint!; s.DeploymentName = (aiKeys.Deployment ?? aiKeys.Model)!; });
+                break;
+            default: // OpenAI — also local / OpenAI-compatible endpoints via Endpoint
+                revealAi.AddOpenAI(s => { s.ApiKey = aiKeys.ApiKey!; s.Model = aiKeys.Model ?? "gpt-5.5"; if (!string.IsNullOrWhiteSpace(aiKeys.Endpoint)) s.Endpoint = aiKeys.Endpoint; });
+                break;
+        }
     }
     catch (Exception ex)
     {
@@ -87,7 +99,15 @@ if (configured)
     }
 }
 
-builder.Services.AddSingleton(new SetupState(configured, licenseError));
+builder.Services.AddSingleton(new SetupState(
+    Configured: configured,
+    LicenseError: licenseError,
+    LicenseNeeded: !haveLicense,
+    Provider: aiKeys.Provider ?? "OpenAI",
+    Model: aiKeys.Model,
+    Endpoint: aiKeys.Endpoint,
+    Deployment: aiKeys.Deployment,
+    HasKey: haveAiKey));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

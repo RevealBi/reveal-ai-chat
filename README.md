@@ -85,8 +85,9 @@ same first-run dialog (saved under `.reveal-ai-chat-config/`, gitignored) — or
 user-secrets instead:
 
 ```bash
-dotnet user-secrets --project server/aspnet/RevealAIChat.Server set "RevealAI:OpenAI:ApiKey" "sk-your-key"
-dotnet user-secrets --project server/aspnet/RevealAIChat.Server set "Reveal:License" "your-license"   # if not already licensed
+dotnet user-secrets --project server/aspnet/RevealAIChat.Server set "RevealAI:ApiKey" "sk-your-key"
+dotnet user-secrets --project server/aspnet/RevealAIChat.Server set "RevealAI:Provider" "OpenAI"        # or Anthropic / AzureOpenAI
+dotnet user-secrets --project server/aspnet/RevealAIChat.Server set "Reveal:License" "your-license"     # if not already licensed
 ```
 
 > Most dev boxes with the Reveal tooling are already licensed (`~/.revealbi-sdk/license.key`),

@@ -1,44 +1,58 @@
-// Talks to the server's setup/settings endpoints. Kept free of the heavy reveal-sdk import
-// so it can run before (and instead of) initializing Reveal.
+// Talks to the server's /api/setup endpoint. Kept free of the heavy reveal-sdk import so it
+// can run before (and instead of) initializing Reveal.
 //
-//   License  -> /api/setup        (startup-bound: needs a restart to apply)
-//   AI keys  -> /api/settings/ai  (runtime: provider/model/key swap live, no restart)
+// One dialog captures the Reveal license (only when one isn't already present) plus the AI
+// provider, key, and model. The server applies all of it at startup, so saving restarts the app.
 
 const HOST = import.meta.env.DEV ? 'http://localhost:5111/' : window.location.origin + '/';
 
 const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
-async function postJson(path: string, body: unknown): Promise<void> {
-  const r = await fetch(HOST + path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!r.ok) {
-    const e = await r.json().catch(() => ({}) as any);
-    throw new Error(e.error || `Save failed (${r.status})`);
-  }
-}
+export type SetupStatus = {
+  configured: boolean;
+  licenseError: boolean;
+  licenseNeeded: boolean;
+  provider: string;
+  model: string | null;
+  endpoint: string | null;
+  deployment: string | null;
+  hasKey: boolean;
+};
 
-// ---- License (startup) -----------------------------------------------------
-
-export type LicenseStatus = { configured: boolean; licenseError: boolean };
-
-export async function getLicenseStatus(): Promise<LicenseStatus> {
+export async function getSetupStatus(): Promise<SetupStatus> {
   const r = await fetch(HOST + 'api/setup/status');
   if (!r.ok) throw new Error('status ' + r.status);
   return r.json();
 }
 
-export const saveLicense = (license: string) => postJson('api/setup', { license });
+export type SetupPayload = {
+  license?: string;
+  provider: string;
+  apiKey?: string;
+  model?: string;
+  endpoint?: string;
+  deployment?: string;
+};
 
-/** After saving a license the server restarts. Poll until it's back and licensed. */
-export async function waitUntilLicensed(maxSeconds = 150): Promise<boolean> {
+export async function saveSetup(p: SetupPayload): Promise<void> {
+  const r = await fetch(HOST + 'api/setup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(p),
+  });
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}) as { error?: string });
+    throw new Error(e.error || `Save failed (${r.status})`);
+  }
+}
+
+/** After saving, the server restarts to apply. Poll until it's back and fully configured. */
+export async function waitUntilConfigured(maxSeconds = 150): Promise<boolean> {
   const deadline = Date.now() + maxSeconds * 1000;
   await sleep(1500);
   while (Date.now() < deadline) {
     try {
-      const s = await getLicenseStatus();
+      const s = await getSetupStatus();
       if (s.configured) return true;
     } catch {
       /* restarting — keep waiting */
@@ -48,33 +62,52 @@ export async function waitUntilLicensed(maxSeconds = 150): Promise<boolean> {
   return false;
 }
 
-// ---- AI settings (runtime) -------------------------------------------------
+// ---- Providers (drives the setup dialog) -----------------------------------
 
-export type AiSettings = { provider: string; model: string; endpoint: string | null; hasKey: boolean };
+export type ProviderId = 'OpenAI' | 'Anthropic' | 'AzureOpenAI';
 
-export async function getAiSettings(): Promise<AiSettings> {
-  const r = await fetch(HOST + 'api/settings/ai');
-  if (!r.ok) throw new Error('ai status ' + r.status);
-  return r.json();
+export interface ProviderInfo {
+  label: string;
+  models: string[]; // empty -> the provider uses a deployment name instead (Azure)
+  keyPlaceholder: string;
+  keysUrl: string;
+  needsEndpoint: boolean; // required resource endpoint (Azure)
+  needsDeployment: boolean; // required deployment name (Azure)
+  optionalEndpoint: boolean; // optional OpenAI-compatible / local base URL
 }
 
-export type AiSettingsPayload = { provider: string; model: string; apiKey?: string; endpoint?: string };
-
-export const saveAiSettings = (p: AiSettingsPayload) => postJson('api/settings/ai', p);
-
-// ---- Providers (drives the dialog dropdowns) -------------------------------
-
-export type ProviderId = 'OpenAI';
-
-export const PROVIDERS: Record<
-  ProviderId,
-  { label: string; models: string[]; keyPlaceholder: string; keysUrl: string }
-> = {
+export const PROVIDERS: Record<ProviderId, ProviderInfo> = {
   OpenAI: {
     label: 'OpenAI',
-    models: ['gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
+    models: ['gpt-5.5', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-4.1', 'gpt-4.1-mini'],
     keyPlaceholder: 'sk-…',
     keysUrl: 'https://platform.openai.com/api-keys',
+    needsEndpoint: false,
+    needsDeployment: false,
+    optionalEndpoint: true,
   },
-  // Phase 2: Anthropic, Google, Azure OpenAI
+  Anthropic: {
+    label: 'Anthropic',
+    models: ['claude-opus-4-8', 'claude-sonnet-4-6', 'claude-haiku-4-5'],
+    keyPlaceholder: 'sk-ant-…',
+    keysUrl: 'https://console.anthropic.com/settings/keys',
+    needsEndpoint: false,
+    needsDeployment: false,
+    optionalEndpoint: false,
+  },
+  AzureOpenAI: {
+    label: 'Azure OpenAI',
+    models: [], // uses a deployment name
+    keyPlaceholder: 'your Azure OpenAI key',
+    keysUrl: 'https://portal.azure.com',
+    needsEndpoint: true,
+    needsDeployment: true,
+    optionalEndpoint: false,
+  },
 };
+
+export const PROVIDER_IDS = Object.keys(PROVIDERS) as ProviderId[];
+
+export function providerLabel(id: string): string {
+  return (PROVIDERS as Record<string, ProviderInfo>)[id]?.label ?? id;
+}

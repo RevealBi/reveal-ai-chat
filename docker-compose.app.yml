@@ -43,8 +43,11 @@ services:
       Setup__ConfigDir: /config       # encrypted keys + Data Protection key-ring live here
       # Keys are entered in the app's first-run dialog by default. To inject them up front
       # instead (CI / unattended), uncomment and set these:
-      # RevealAI__OpenAI__ApiKey: ${OPENAI_API_KEY:-}
-      # RevealAI__OpenAI__Model: ${OPENAI_MODEL:-gpt-4.1}
+      # RevealAI__Provider: ${AI_PROVIDER:-OpenAI}        # OpenAI | Anthropic | AzureOpenAI
+      # RevealAI__ApiKey: ${AI_API_KEY:-}
+      # RevealAI__Model: ${AI_MODEL:-}
+      # RevealAI__Endpoint: ${AI_ENDPOINT:-}              # Azure resource endpoint / OpenAI-compatible base URL
+      # RevealAI__Deployment: ${AI_DEPLOYMENT:-}          # Azure deployment name
       # Reveal__License: ${REVEAL_LICENSE:-}
       # Reveal__LicenseFile: /run/secrets/reveal_license
     volumes:

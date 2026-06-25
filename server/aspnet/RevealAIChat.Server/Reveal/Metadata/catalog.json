@@ -4,35 +4,35 @@
       "Id": "automotive",
       "Provider": "PostgreSQL",
       "Databases": [
-        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "automotive" } ] }
+        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "public.automotive" } ] }
       ]
     },
     {
       "Id": "retail",
       "Provider": "PostgreSQL",
       "Databases": [
-        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "retail" } ] }
+        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "public.retail" } ] }
       ]
     },
     {
       "Id": "manufacturing",
       "Provider": "PostgreSQL",
       "Databases": [
-        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "manufacturing" } ] }
+        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "public.manufacturing" } ] }
       ]
     },
     {
       "Id": "healthcare",
       "Provider": "PostgreSQL",
       "Databases": [
-        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "healthcare" } ] }
+        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "public.healthcare" } ] }
       ]
     },
     {
       "Id": "energy",
       "Provider": "PostgreSQL",
       "Databases": [
-        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "energy" } ] }
+        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "public.energy" } ] }
       ]
     }
   ]

@@ -2,71 +2,55 @@ import { useEffect, useState } from 'react';
 import App from '../App';
 import { initReveal } from '../lib/revealClient';
 import { AiSettingsContext } from '../lib/aiSettings';
-import { getLicenseStatus, getAiSettings, type LicenseStatus, type AiSettings } from '../lib/setup';
-import { LicenseDialog } from './LicenseDialog';
-import { AiSettingsDialog } from './AiSettingsDialog';
+import { getSetupStatus, type SetupStatus } from '../lib/setup';
+import { SetupDialog } from './SetupDialog';
 
-type Phase = 'loading' | 'license' | 'ai' | 'ready';
+const FALLBACK: SetupStatus = {
+  configured: false,
+  licenseError: false,
+  licenseNeeded: true,
+  provider: 'OpenAI',
+  model: null,
+  endpoint: null,
+  deployment: null,
+  hasKey: false,
+};
 
 /**
  * Gate in front of the app:
- *   1. No license  -> LicenseDialog (saves + restarts).
- *   2. No AI key   -> AiSettingsDialog (runtime, no restart).
- *   3. Otherwise   -> initialize Reveal and render the app (with a reopenable Settings dialog).
+ *   - Not configured (missing license or AI key) -> one SetupDialog (saves + restarts).
+ *   - Configured -> initialize Reveal and render the app, with a reopenable Settings dialog.
  */
 export function SetupGate() {
-  const [phase, setPhase] = useState<Phase>('loading');
-  const [license, setLicense] = useState<LicenseStatus | null>(null);
-  const [ai, setAi] = useState<AiSettings | null>(null);
+  const [status, setStatus] = useState<SetupStatus | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const ls = await getLicenseStatus();
-        setLicense(ls);
-        if (!ls.configured) { setPhase('license'); return; }
-        const a = await getAiSettings();
-        setAi(a);
-        setPhase(a.hasKey ? 'ready' : 'ai');
+        setStatus(await getSetupStatus());
       } catch {
-        setLicense({ configured: false, licenseError: false });
-        setPhase('license');
+        setStatus(FALLBACK);
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
 
-  if (phase === 'loading') return <Splash />;
-  if (phase === 'license') return <LicenseDialog status={license!} />;
-  if (phase === 'ai') return <AiSettingsDialog initial={ai!} dismissable={false} onSaved={() => setPhase('ready')} />;
-  return <ConfiguredApp />;
+  if (loading || !status) return <Splash />;
+  if (!status.configured) return <SetupDialog status={status} dismissable={false} />;
+  return <ConfiguredApp status={status} />;
 }
 
-function ConfiguredApp() {
+function ConfiguredApp({ status }: { status: SetupStatus }) {
   const [open, setOpen] = useState(false);
-  const [initial, setInitial] = useState<AiSettings | null>(null);
 
   initReveal(); // idempotent — set up the SDK before App renders any RevealView
 
-  async function openSettings() {
-    try {
-      setInitial(await getAiSettings());
-      setOpen(true);
-    } catch {
-      /* ignore */
-    }
-  }
-
   return (
-    <AiSettingsContext.Provider value={{ openSettings }}>
+    <AiSettingsContext.Provider value={{ status, openSettings: () => setOpen(true) }}>
       <App />
-      {open && initial && (
-        <AiSettingsDialog
-          initial={initial}
-          dismissable
-          onClose={() => setOpen(false)}
-          onSaved={() => setOpen(false)}
-        />
-      )}
+      {open && <SetupDialog status={status} dismissable onClose={() => setOpen(false)} />}
     </AiSettingsContext.Provider>
   );
 }

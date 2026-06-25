@@ -28,8 +28,6 @@ interface AppValue {
   dataset: VerticalConfig;
   datasets: VerticalConfig[];
   setDataset: (v: VerticalConfig) => void;
-  model: string;
-  setModel: (m: string) => void;
 
   conversations: Conversation[];
   active: Conversation | null;
@@ -51,7 +49,6 @@ const Ctx = createContext<AppValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [datasetId, setDatasetId] = useState<string>(() => load('dataset', RETAIL.id));
-  const [model, setModelState] = useState<string>(() => load('model', 'gpt-4.1'));
   const [conversations, setConversations] = useState<Conversation[]>(() => loadConversations());
   const [activeId, setActiveIdState] = useState<string | null>(() => loadActiveId());
   const [usageTokens, setUsageTokens] = useState(0);
@@ -133,10 +130,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setDatasetId(v.id);
     save('dataset', v.id);
   }, []);
-  const setModel = useCallback((m: string) => {
-    setModelState(m);
-    save('model', m);
-  }, []);
   const addTokens = useCallback((n: number) => setUsageTokens((t) => t + n), []);
 
   const openPanel = useCallback((dashboardJson: string) => setPanel({ dashboardJson, expanded: false }), []);
@@ -150,8 +143,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     dataset,
     datasets: VERTICALS,
     setDataset,
-    model,
-    setModel,
     conversations,
     active,
     newChat,
