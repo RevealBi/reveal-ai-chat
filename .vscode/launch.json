@@ -2,7 +2,7 @@
   // Open this folder in VS Code, then press F5 to build and run ONLY the server (API on :7654,
   // debugger attached). Start the client and database separately (see README "Run from source"):
   //   cd client && npm run dev     # Vite dev server on :5173 — open this in your browser
-  //   docker compose up -d         # Postgres (seeds on first run)
+  //   docker compose -f docker-compose.db.yml up -d   # Postgres (seeds on first run)
   "version": "0.2.0",
   "configurations": [
     {

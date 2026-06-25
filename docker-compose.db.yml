@@ -4,12 +4,9 @@
 # On first boot it auto-seeds the 5 vertical tables from db/seed/*.sql (Postgres runs
 # everything in /docker-entrypoint-initdb.d once, against an empty data volume).
 #
-#   docker compose up -d        # start (seeds on first run; instant thereafter)
-#   docker compose down         # stop (keeps data)
-#   docker compose down -v      # stop + wipe data (forces a fresh re-seed next time)
-#
-# The ASP.NET project runs `docker compose up -d --wait` for you on F5, so for that
-# project you don't need to run anything by hand.
+#   docker compose -f docker-compose.db.yml up -d      # start (seeds on first run; instant thereafter)
+#   docker compose -f docker-compose.db.yml down       # stop (keeps data)
+#   docker compose -f docker-compose.db.yml down -v    # stop + wipe data (forces a fresh re-seed next time)
 
 services:
   db:

@@ -18,7 +18,7 @@ do
 
     var builder = WebApplication.CreateBuilder(args);
 
-    // Postgres connection (see docker-compose.yml); overridable via the "Database" section.
+    // Postgres connection (see docker-compose.db.yml); overridable via the "Database" section.
     DbConfig.Load(builder.Configuration);
 
     // ---------------------------------------------------------------------------
@@ -136,7 +136,7 @@ do
     if (app.Environment.IsDevelopment())
     {
         // The Postgres container is started separately (see README "Run from source"):
-        //   docker compose up -d        (seeds on first run)
+        //   docker compose -f docker-compose.db.yml up -d   (seeds on first run)
         app.UseSwagger();
         app.UseSwaggerUI();
         app.UseCors("Dev");

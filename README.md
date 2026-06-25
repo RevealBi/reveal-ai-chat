@@ -4,8 +4,8 @@ A sample app that turns plain-English questions into Reveal dashboards — React
 host, and a PostgreSQL database in Docker, with five ready-made datasets (Retail, Automotive,
 Manufacturing, Healthcare, Energy).
 
-To run it you need an **OpenAI API key** and a **Reveal SDK license** — the app collects both
-in a first-run dialog, so there's nothing to put in a file.
+To run it you need an **AI provider key** (OpenAI, Anthropic, or Azure OpenAI) and a **Reveal SDK
+license** — the app collects both in a first-run dialog, so there's nothing to put in a file.
 
 | | For | Needs |
 | --- | --- | --- |
@@ -22,46 +22,21 @@ Docker is the only prerequisite. From the repo root:
 docker compose -f docker-compose.app.yml up --build
 ```
 
-The first run builds the image and seeds the database (a few minutes); after that it starts in
-seconds. Then:
+The images aren't published anywhere, so Compose builds the app from source on the first run (a few
+minutes, plus a one-time database seed); after that it starts in seconds. Then:
 
-1. Open **<http://localhost:8111>**.
-2. Paste your **Reveal SDK license** → **Save & start**. The app restarts itself once (a few
-   seconds) and comes back.
-3. Paste your **OpenAI API key** → **Save** — applies immediately, no restart.
-4. Ask a question, e.g. *"Show total profit by region."*
+1. Open **<http://localhost:8111>** — a setup dialog appears.
+2. Pick your **AI provider** (OpenAI, Anthropic, or Azure OpenAI), enter its **API key** and your
+   **Reveal SDK license**, then **Save** — the app applies them and restarts once (a few seconds).
+3. Ask a question, e.g. *"Show total profit by region."*
 
-Keys are saved encrypted in a Docker volume, so you only enter them once. Change dataset
-(top-left) or model/key (the **gear** icon) anytime.
+Keys are saved encrypted in a Docker volume, so you only enter them once. Change dataset (top-left)
+or model/key (the **gear** icon) anytime.
 
 ```bash
 docker compose -f docker-compose.app.yml down       # stop — keeps keys + data
 docker compose -f docker-compose.app.yml down -v    # stop + wipe everything
 ```
-
-(Once the images are published you can skip the build: `docker compose -f docker-compose.app.yml pull`, then `up`.)
-
-<details><summary><b>Provide keys up front instead (CI / unattended)</b></summary>
-
-Uncomment the `RevealAI__*` / `Reveal__*` lines under `app:` in `docker-compose.app.yml`, then:
-
-```bash
-cp .env.example .env        # add your OpenAI key + Reveal license (.env is gitignored)
-docker compose -f docker-compose.app.yml up --build
-```
-</details>
-
-<details><summary><b>Maintainers — publish the images</b></summary>
-
-```bash
-docker build -t revealbi/reveal-ai-chat-sample:latest .
-docker build -t revealbi/reveal-ai-chat-sample-db:latest db
-docker push revealbi/reveal-ai-chat-sample:latest
-docker push revealbi/reveal-ai-chat-sample-db:latest
-```
-
-Use `docker buildx` for multi-arch (amd64 + arm64) so Apple-Silicon users can run it.
-</details>
 
 ---
 
@@ -77,7 +52,7 @@ dev server), and the **server** (ASP.NET, where you debug). Start each once, in 
 **1 — Database** (Postgres in Docker; seeds ~22k rows on first run, instant after):
 
 ```bash
-docker compose up -d
+docker compose -f docker-compose.db.yml up -d
 ```
 
 **2 — Server** (ASP.NET API on **:7654**, with the debugger). Pick one:
@@ -104,13 +79,13 @@ instantly with no server restart. Paste your keys in the first-run dialog (saved
 <details><summary><b>Provide keys via user-secrets instead of the dialog</b></summary>
 
 ```bash
-dotnet user-secrets --project server/aspnet/RevealAIChat.Server set "RevealAI:ApiKey" "sk-your-key"
+dotnet user-secrets --project server/aspnet/RevealAIChat.Server set "RevealAI:ApiKey" "your-api-key"
 dotnet user-secrets --project server/aspnet/RevealAIChat.Server set "RevealAI:Provider" "OpenAI"        # or Anthropic / AzureOpenAI
 dotnet user-secrets --project server/aspnet/RevealAIChat.Server set "Reveal:License" "your-license"     # if not already licensed
 ```
 
 Most dev boxes with the Reveal tooling are already licensed (`~/.revealbi-sdk/license.key`), so
-you'll usually only need the OpenAI key.
+you'll usually only need the AI provider key.
 </details>
 
 ---
@@ -127,7 +102,7 @@ you'll usually only need the OpenAI key.
   `client/src/lib/serverUrl.ts` (default :7654 — must match the server's `applicationUrl`). Override
   it with `VITE_SERVER_URL` (e.g. for the coming Node/Java hosts) without editing the file.
 - **Database** — connect any SQL client to `localhost:5432` (db `revealaichat`, user `reveal`,
-  password `reveal_ai_chat`). Wipe + reseed with `docker compose -f docker-compose.yml down -v`.
+  password `reveal_ai_chat`). Wipe + reseed with `docker compose -f docker-compose.db.yml down -v`.
 - **AI metadata** — the tables the AI may use are listed in `Reveal/Metadata/catalog.json`. The
   SDK caches generated metadata per datasource under `%LOCALAPPDATA%/reveal/ai/metadata`; delete
   that folder to force a clean regenerate. Regenerate at runtime with
@@ -141,11 +116,11 @@ In **development** the three parts run side by side and stay decoupled:
 
 ```
 client/ (Vite dev, :5173)  ──cross-origin──▶  server/aspnet (ASP.NET, :7654)  ──▶  Postgres (db/, Docker)
-   the UI, hot-reloaded                         Reveal / Reveal AI APIs              docker compose up -d
+   the UI, hot-reloaded                         Reveal / Reveal AI APIs              docker-compose.db.yml
 ```
 
 - **Dev: separate processes.** F5 builds and runs only the server. The client (`npm run dev`) and
-  Postgres (`docker compose up -d`) are started separately; the client calls the server directly at
+  Postgres (`docker compose -f docker-compose.db.yml up -d`) are started separately; the client calls the server directly at
   its URL (cross-origin, allowed by the server's Development CORS policy).
 - **Packaged: one host, same origin.** The Docker image builds `client/` into the server's `wwwroot`
   at image-build time, so the shipped app is a single container serving UI + APIs — no second port,
@@ -160,8 +135,8 @@ Seed scripts in `db/seed/*.sql` are generated from the Excel files in `db/source
 ```bash
 cd db
 npm install && npm run gen                           # source/*.xlsx -> seed/*.sql
-docker compose -f ../docker-compose.yml down -v      # wipe the dev volume
-docker compose -f ../docker-compose.yml up -d        # reseed on next boot
+docker compose -f ../docker-compose.db.yml down -v      # wipe the dev volume
+docker compose -f ../docker-compose.db.yml up -d        # reseed on next boot
 ```
 
 (After changing the seed, rebuild the Docker images so `docker-compose.app.yml` picks it up.)

@@ -2,13 +2,9 @@
 # Settings dialog in the browser to collect your Reveal license + LLM provider/model/key;
 # they're saved encrypted in a volume, so you only do it once.
 #
-#   docker compose -f docker-compose.app.yml up --build     # build from source
-#   docker compose -f docker-compose.app.yml pull            # ...or from published images
-#   docker compose -f docker-compose.app.yml up
+#   docker compose -f docker-compose.app.yml up --build     # builds the app from source (not published anywhere), then starts
 #
 # Then open http://localhost:8111 and fill in the dialog.
-#
-# Prefer to inject keys up front (CI / unattended)? Uncomment the env lines under `app`.
 
 name: reveal-ai-chat
 
@@ -41,16 +37,7 @@ services:
       Database__Name: revealaichat
       Database__User: reveal
       Database__Password: reveal_ai_chat
-      Setup__ConfigDir: /config       # encrypted keys + Data Protection key-ring live here
-      # Keys are entered in the app's first-run dialog by default. To inject them up front
-      # instead (CI / unattended), uncomment and set these:
-      # RevealAI__Provider: ${AI_PROVIDER:-OpenAI}        # OpenAI | Anthropic | AzureOpenAI
-      # RevealAI__ApiKey: ${AI_API_KEY:-}
-      # RevealAI__Model: ${AI_MODEL:-}
-      # RevealAI__Endpoint: ${AI_ENDPOINT:-}              # Azure resource endpoint / OpenAI-compatible base URL
-      # RevealAI__Deployment: ${AI_DEPLOYMENT:-}          # Azure deployment name
-      # Reveal__License: ${REVEAL_LICENSE:-}
-      # Reveal__LicenseFile: /run/secrets/reveal_license
+      Setup__ConfigDir: /config       # encrypted keys (entered in the first-run dialog) + Data Protection key-ring
     volumes:
       - reveal-ai-chat-config:/config
     ports:

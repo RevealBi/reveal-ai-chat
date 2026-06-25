@@ -3,8 +3,8 @@
 //   cd db && npm install && npm run gen
 //
 // Output is mounted into the Postgres container's /docker-entrypoint-initdb.d, so the
-// database seeds itself on first `docker compose up`. Re-run this whenever the source
-// Excel files change, then `docker compose down -v && docker compose up -d` to reseed.
+// database seeds itself on first run. Re-run this whenever the source Excel files change, then
+// reseed: `docker compose -f ../docker-compose.db.yml down -v` then `... up -d`.
 
 import XLSX from 'xlsx';
 import { writeFileSync, mkdirSync } from 'node:fs';

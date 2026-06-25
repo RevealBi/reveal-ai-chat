@@ -1,7 +1,7 @@
 namespace RevealAIChat.Server.Reveal
 {
     /// <summary>
-    /// Connection to the local Postgres database defined in <c>docker-compose.yml</c>.
+    /// Connection to the local Postgres database defined in <c>docker-compose.db.yml</c>.
     /// Defaults match the compose file; everything is overridable via the "Database"
     /// configuration section (appsettings / env vars) so the same code runs against a
     /// container, a managed Postgres, CI, etc.
