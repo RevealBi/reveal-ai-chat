@@ -113,6 +113,17 @@ if (app.Environment.IsDevelopment())
     app.UseCors("Dev");
 }
 
+// Reveal AI caches generated metadata per datasource under %LOCALAPPDATA%/reveal/ai/metadata,
+// keyed by datasource id and NOT invalidated when the catalog's database changes. Drop any
+// datasource whose cache points at a different database so it regenerates cleanly — otherwise the
+// stale index is reused and chat fails with "The given key '<database>' was not present in the
+// dictionary." Runs before the AI metadata generator (a hosted service) starts; no-op on a fresh
+// machine or in the Docker image.
+if (configured)
+    MetadataCache.ClearStaleForDatabase(
+        Path.Combine(app.Environment.ContentRootPath, "Reveal", "Metadata", "catalog.json"),
+        DbConfig.Database, app.Logger);
+
 // Serve the built React client (wwwroot) alongside the API — same origin.
 app.UseDefaultFiles();
 app.UseStaticFiles();
