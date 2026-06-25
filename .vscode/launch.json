@@ -1,0 +1,25 @@
+{
+  // Open this folder in VS Code, then press F5.
+  // The preLaunchTask builds the project (which builds the React client into wwwroot);
+  // the app then brings up the Postgres container and serves everything at :5111;
+  // serverReadyAction opens the browser when it's listening.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Reveal AI Chat (ASP.NET)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/server/aspnet/RevealAIChat.Server/bin/Debug/net8.0/RevealAIChat.Server.dll",
+      "cwd": "${workspaceFolder}/server/aspnet/RevealAIChat.Server",
+      "console": "integratedTerminal",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Now listening on:\\s+(https?://\\S+)"
+      }
+    }
+  ]
+}

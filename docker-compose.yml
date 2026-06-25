@@ -1,0 +1,34 @@
+# Reveal AI Chat — local database.
+#
+# One small Postgres container, shared by all three backends (ASP.NET / Node / Java).
+# On first boot it auto-seeds the 5 vertical tables from db/seed/*.sql (Postgres runs
+# everything in /docker-entrypoint-initdb.d once, against an empty data volume).
+#
+#   docker compose up -d        # start (seeds on first run; instant thereafter)
+#   docker compose down         # stop (keeps data)
+#   docker compose down -v      # stop + wipe data (forces a fresh re-seed next time)
+#
+# The ASP.NET project runs `docker compose up -d --wait` for you on F5, so for that
+# project you don't need to run anything by hand.
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: reveal-ai-chat-db
+    environment:
+      POSTGRES_DB: revealaichat
+      POSTGRES_USER: reveal
+      POSTGRES_PASSWORD: reveal_ai_chat
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/seed:/docker-entrypoint-initdb.d:ro
+      - reveal-ai-chat-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reveal -d revealaichat"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  reveal-ai-chat-pgdata:

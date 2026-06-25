@@ -427,3 +427,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# --- Reveal AI Chat (sample-specific) ---
+.env
+**/dist/
+**/.reveal-ai-chat-config/
+**/wwwroot/

@@ -1,0 +1,39 @@
+{
+  "Datasources": [
+    {
+      "Id": "automotive",
+      "Provider": "PostgreSQL",
+      "Databases": [
+        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "automotive" } ] }
+      ]
+    },
+    {
+      "Id": "retail",
+      "Provider": "PostgreSQL",
+      "Databases": [
+        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "retail" } ] }
+      ]
+    },
+    {
+      "Id": "manufacturing",
+      "Provider": "PostgreSQL",
+      "Databases": [
+        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "manufacturing" } ] }
+      ]
+    },
+    {
+      "Id": "healthcare",
+      "Provider": "PostgreSQL",
+      "Databases": [
+        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "healthcare" } ] }
+      ]
+    },
+    {
+      "Id": "energy",
+      "Provider": "PostgreSQL",
+      "Databases": [
+        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "energy" } ] }
+      ]
+    }
+  ]
+}

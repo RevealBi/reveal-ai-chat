@@ -1,0 +1,12 @@
+# Keep the build context small + reproducible — the image rebuilds the client and server.
+**/node_modules
+**/bin
+**/obj
+**/dist
+server/aspnet/RevealAIChat.Server/wwwroot
+db/
+.vs
+.vscode
+.git
+.gitignore
+**/*.md

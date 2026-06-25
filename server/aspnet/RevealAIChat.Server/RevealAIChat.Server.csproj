@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>reveal-ai-chat-aspnet</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- One package powers BOTH Chat (Ask) and Insights (Explain/Pulse/Alerts). -->
+    <PackageReference Include="OpenAI" Version="2.8.0" />
+    <PackageReference Include="Reveal.Sdk.AI.AspNetCore" Version="1.0.5" />
+    <!-- OpenAI provider — also the path for local / OpenAI-compatible models. -->
+    <PackageReference Include="Reveal.Sdk.AI.OpenAI" Version="1.0.5" />
+    <PackageReference Include="Reveal.Sdk.Data.PostgreSQL" Version="1.8.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Ship the AI metadata catalog with the published app — the container reads it from
+         the content root (/app). Harmless for F5, which reads it from the project dir. -->
+    <None Update="Reveal\Metadata\catalog.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Build the React client into wwwroot so `dotnet run` / VS F5 / VS Code serve the
+       whole app with no manual steps. Incremental: this runs only when a client source
+       file changed (or when wwwroot is empty, e.g. a fresh clone) — so plain C# edits
+       don't pay the cost. Pass -p:SkipClientBuild=true to skip it (e.g. in CI). -->
+  <ItemGroup>
+    <ClientInputs Include="$(MSBuildProjectDirectory)\..\..\..\client\src\**\*" />
+    <ClientInputs Include="$(MSBuildProjectDirectory)\..\..\..\client\index.html" />
+    <ClientInputs Include="$(MSBuildProjectDirectory)\..\..\..\client\package.json" />
+    <ClientInputs Include="$(MSBuildProjectDirectory)\..\..\..\client\vite.config.ts" />
+  </ItemGroup>
+
+  <Target Name="BuildReactClient" BeforeTargets="Build" Condition="'$(SkipClientBuild)' != 'true'" Inputs="@(ClientInputs)" Outputs="$(MSBuildProjectDirectory)\wwwroot\index.html">
+    <Message Importance="high" Text="Building React client → wwwroot (first run also runs npm install; give it a minute)..." />
+    <Exec Condition="!Exists('$(MSBuildProjectDirectory)\..\..\..\client\node_modules')" Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)\..\..\..\client" />
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)\..\..\..\client" />
+  </Target>
+
+</Project>
