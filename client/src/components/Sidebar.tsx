@@ -20,7 +20,7 @@ export function Sidebar() {
 
       <div className="px-3 pb-2">
         <button
-          onClick={newChat}
+          onClick={() => newChat()}
           className="flex w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] font-medium text-slate-700 transition hover:border-violet-300 hover:text-violet-700"
         >
           <PencilLine className="h-4 w-4 text-violet-600" />

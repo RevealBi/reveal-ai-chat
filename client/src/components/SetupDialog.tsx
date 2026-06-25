@@ -85,7 +85,7 @@ export function SetupDialog({
     }
   }
 
-  if (starting) return <StartingScreen />;
+  if (starting) return <StartingScreen restarting={dismissable} />;
 
   const card = (
     <form onSubmit={submit} className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-7 shadow-xl">
@@ -216,15 +216,18 @@ export function SetupDialog({
   return <div className="grid h-full place-items-center overflow-auto bg-gradient-to-b from-slate-50 to-violet-50 p-6">{card}</div>;
 }
 
-function StartingScreen() {
+function StartingScreen({ restarting }: { restarting?: boolean }) {
   return (
-    <div className="grid h-full place-items-center bg-gradient-to-b from-slate-50 to-violet-50 p-6">
+    <div className="fixed inset-0 z-[60] grid place-items-center bg-slate-50/95 p-6 backdrop-blur-sm">
       <div className="flex max-w-sm flex-col items-center text-center">
         <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
-        <h2 className="mt-4 text-lg font-semibold text-slate-900">Starting up…</h2>
+        <h2 className="mt-4 text-lg font-semibold text-slate-900">
+          {restarting ? 'Restarting…' : 'Starting up…'}
+        </h2>
         <p className="mt-1.5 text-sm text-slate-500">
-          Applying your settings, seeding the database, and warming up. This can take up to a minute
-          on the first run.
+          {restarting
+            ? 'Applying your new AI settings — the server is restarting. This takes a few seconds; the chat will be ready in a moment.'
+            : 'Applying your settings, seeding the database, and warming up. This can take up to a minute on the first run.'}
         </p>
       </div>
     </div>

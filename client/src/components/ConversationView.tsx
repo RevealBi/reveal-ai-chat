@@ -6,8 +6,8 @@ import { titleFrom, uid, type ChatMessage } from '../lib/conversations';
 import { useAiSettings } from '../lib/aiSettings';
 import { providerLabel } from '../lib/setup';
 import { InlineChart } from './InlineChart';
-import { clearAll } from '../lib/storage';
-import { Sparkles, ArrowUp, RotateCcw, Lightbulb, LayoutDashboard } from 'lucide-react';
+import { clearAll, load, save } from '../lib/storage';
+import { Sparkles, ArrowUp, RotateCcw, Lightbulb, LayoutDashboard, ChevronDown } from 'lucide-react';
 
 interface StreamState {
   html: string;
@@ -96,6 +96,7 @@ export function ConversationView() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [stream, setStream] = useState<StreamState | null>(null);
+  const [tipsOpen, setTipsOpen] = useState(() => load('promptsOpen', true));
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const messages = active?.messages ?? [];
@@ -291,6 +292,38 @@ export function ConversationView() {
 
       <div className="px-6 pb-5 pt-2">
         <div className="mx-auto max-w-3xl">
+          {messages.length > 0 && dataset.prompts.length > 0 && (
+            <div className="mb-2">
+              <button
+                onClick={() => {
+                  const next = !tipsOpen;
+                  setTipsOpen(next);
+                  save('promptsOpen', next);
+                }}
+                className="flex items-center gap-1 text-[11px] font-medium text-slate-400 transition hover:text-slate-600"
+              >
+                <Lightbulb className="h-3 w-3" />
+                Try asking
+                <ChevronDown
+                  className={`h-3 w-3 transition-transform ${tipsOpen ? '' : '-rotate-90'}`}
+                />
+              </button>
+              {tipsOpen && (
+                <div className="mt-1.5 flex flex-wrap gap-2">
+                  {dataset.prompts.map((p, i) => (
+                    <button
+                      key={i}
+                      onClick={() => send(p)}
+                      disabled={busy}
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-500 transition hover:border-violet-300 hover:text-violet-700 disabled:opacity-50"
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           <div className="flex items-end gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2.5 shadow-sm focus-within:border-violet-400">
             <textarea
               value={input}
