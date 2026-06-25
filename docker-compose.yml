@@ -1,6 +1,6 @@
 # Reveal AI Chat — local database.
 #
-# One small Postgres container, shared by all three backends (ASP.NET / Node / Java).
+# One small Postgres container that backs the ASP.NET app during local development.
 # On first boot it auto-seeds the 5 vertical tables from db/seed/*.sql (Postgres runs
 # everything in /docker-entrypoint-initdb.d once, against an empty data volume).
 #

@@ -27,8 +27,7 @@ builder.Services.AddDataProtection()
     .SetApplicationName("RevealAIChat");
 
 var saved = new KeyStore(configDir, KeyStore.StartupProtector(configDir)).Load();
-builder.Services.AddSingleton(sp =>
-    new KeyStore(configDir, KeyStore.DiProtector(sp.GetRequiredService<IDataProtectionProvider>())));
+builder.Services.AddSingleton(sp => new KeyStore(configDir, KeyStore.DiProtector(sp.GetRequiredService<IDataProtectionProvider>())));
 
 string? license = Pick(builder.Configuration["Reveal:License"],
                        ReadFileOrNull(builder.Configuration["Reveal:LicenseFile"]),
@@ -61,8 +60,6 @@ if (configured)
         {
             rb.AddDataSourceProvider<DataSourceProvider>();
             rb.AddAuthenticationProvider<AuthenticationProvider>();
-            // Connectors register lazily (first dashboard request) but AI metadata
-            // generation runs at startup, so register Postgres up front.
             rb.DataSources.RegisterPostgreSQL();
             if (!string.IsNullOrWhiteSpace(license))
                 rb.AddSettings(s => s.License = license); // else the SDK reads its native file
@@ -72,8 +69,7 @@ if (configured)
         // BYO key: the SDK calls YOUR model with YOUR key; it only ever sees governed query
         // results, never raw rows or SQL.
         var ai = builder.Services.AddRevealAI()
-            .UseMetadataCatalogFile(Path.Combine(
-                builder.Environment.ContentRootPath, "Reveal", "Metadata", "catalog.json"));
+            .UseMetadataCatalogFile(Path.Combine(builder.Environment.ContentRootPath, "Reveal", "Metadata", "catalog.json"));
 
         // A single runtime provider, registered under the default key ("openai"). It reads
         // the live RuntimeAiSettings on EVERY call, so the Settings dialog can change the
@@ -96,8 +92,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Dev-only CORS so the Vite dev server (http://localhost:5173) can reach the API.
-builder.Services.AddCors(o => o.AddPolicy("Dev",
-    p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+builder.Services.AddCors(o => o.AddPolicy("Dev", p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
 
@@ -126,5 +121,4 @@ app.MapFallbackToFile("index.html");
 app.Run();
 
 static string? Pick(params string?[] values) => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
-static string? ReadFileOrNull(string? path) =>
-    !string.IsNullOrWhiteSpace(path) && File.Exists(path) ? File.ReadAllText(path).Trim() : null;
+static string? ReadFileOrNull(string? path) => !string.IsNullOrWhiteSpace(path) && File.Exists(path) ? File.ReadAllText(path).Trim() : null;
