@@ -15,11 +15,15 @@ namespace RevealAIChat.Server.Setup
     {
         private readonly KeyStore _store;
         private readonly SetupState _state;
+        private readonly RestartSignal _restart;
+        private readonly IHostApplicationLifetime _lifetime;
 
-        public SetupController(KeyStore store, SetupState state)
+        public SetupController(KeyStore store, SetupState state, RestartSignal restart, IHostApplicationLifetime lifetime)
         {
             _store = store;
             _state = state;
+            _restart = restart;
+            _lifetime = lifetime;
         }
 
         [HttpGet("status")]
@@ -64,9 +68,13 @@ namespace RevealAIChat.Server.Setup
 
             _store.Save(keys);
 
-            // Reveal + the provider initialize at startup, so apply by restarting. Docker's
-            // restart policy brings the container right back; the client polls status and reloads.
-            _ = Task.Run(async () => { await Task.Delay(700); Environment.Exit(0); });
+            // Reveal + the provider initialize at host startup, so apply by restarting. The host
+            // runs inside a restart loop (Program.cs): flag the restart, then stop the host so the
+            // loop rebuilds and reruns it in-process — works the same under F5 / dotnet run / Docker,
+            // with no external supervisor. The short delay lets this response reach the client,
+            // which polls status and reloads.
+            _restart.Request();
+            _ = Task.Run(async () => { await Task.Delay(700); _lifetime.StopApplication(); });
             return Ok(new { restarting = true });
         }
     }

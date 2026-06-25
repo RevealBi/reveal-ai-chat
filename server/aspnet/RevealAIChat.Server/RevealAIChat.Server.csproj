@@ -24,21 +24,8 @@
     <None Update="Reveal\Metadata\catalog.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!-- Build the React client into wwwroot so `dotnet run` / VS F5 / VS Code serve the
-       whole app with no manual steps. Incremental: this runs only when a client source
-       file changed (or when wwwroot is empty, e.g. a fresh clone) — so plain C# edits
-       don't pay the cost. Pass -p:SkipClientBuild=true to skip it (e.g. in CI). -->
-  <ItemGroup>
-    <ClientInputs Include="$(MSBuildProjectDirectory)\..\..\..\client\src\**\*" />
-    <ClientInputs Include="$(MSBuildProjectDirectory)\..\..\..\client\index.html" />
-    <ClientInputs Include="$(MSBuildProjectDirectory)\..\..\..\client\package.json" />
-    <ClientInputs Include="$(MSBuildProjectDirectory)\..\..\..\client\vite.config.ts" />
-  </ItemGroup>
-
-  <Target Name="BuildReactClient" BeforeTargets="Build" Condition="'$(SkipClientBuild)' != 'true'" Inputs="@(ClientInputs)" Outputs="$(MSBuildProjectDirectory)\wwwroot\index.html">
-    <Message Importance="high" Text="Building React client → wwwroot (first run also runs npm install; give it a minute)..." />
-    <Exec Condition="!Exists('$(MSBuildProjectDirectory)\..\..\..\client\node_modules')" Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)\..\..\..\client" />
-    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)\..\..\..\client" />
-  </Target>
+  <!-- The client is built and run separately (see README "Run from source"): `npm run dev` for the
+       Vite dev server in development, and `npm run build` (or the Docker image's node stage) to
+       bundle it into wwwroot for the all-in-one. F5 builds and runs only this server. -->
 
 </Project>

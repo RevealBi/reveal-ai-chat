@@ -8,6 +8,8 @@ export interface ChatMessage {
   text?: string; // raw text (user / log / error)
   html?: string; // rendered markdown (assistant)
   dashboardJson?: string; // dashboard this assistant turn produced, if any
+  title?: string | null; // first chart's title, captured when the dashboard arrives
+  chartCount?: number; // number of charts, captured when the dashboard arrives
 }
 
 export interface Conversation {

@@ -6,7 +6,7 @@
 #   docker compose -f docker-compose.app.yml pull            # ...or from published images
 #   docker compose -f docker-compose.app.yml up
 #
-# Then open http://localhost:5111 and fill in the dialog.
+# Then open http://localhost:8111 and fill in the dialog.
 #
 # Prefer to inject keys up front (CI / unattended)? Uncomment the env lines under `app`.
 
@@ -33,8 +33,9 @@ services:
       context: .
       dockerfile: Dockerfile
     image: revealbi/reveal-ai-chat-sample:latest
-    restart: unless-stopped          # the one-time post-setup restart comes right back
+    restart: unless-stopped          # crash resilience only; the post-setup restart now happens in-process
     environment:
+      ASPNETCORE_URLS: http://+:8111   # app listens on 8111 (matches the published port below)
       Database__Host: db
       Database__Port: "5432"
       Database__Name: revealaichat
@@ -53,7 +54,7 @@ services:
     volumes:
       - reveal-ai-chat-config:/config
     ports:
-      - "5111:5111"
+      - "8111:8111"
     depends_on:
       db:
         condition: service_healthy

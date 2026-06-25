@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { getClient } from '../lib/revealClient';
+import { dashboardMeta } from '../lib/dashboard';
 import { useApp, estimateTokens } from '../lib/appContext';
 import { md } from '../lib/md';
 import { titleFrom, uid, type ChatMessage } from '../lib/conversations';
@@ -29,11 +30,10 @@ function MessageRow({
   busy,
 }: {
   msg: ChatMessage;
-  onExplain: (d: string) => void;
+  onExplain: (d: string, title: string | null) => void;
   onOpen: (d: string) => void;
   busy: boolean;
 }) {
-  const [count, setCount] = useState(0);
   if (msg.role === 'user') {
     return (
       <div className="flex justify-end">
@@ -64,12 +64,12 @@ function MessageRow({
           <div className="mt-3 overflow-hidden rounded-xl border border-slate-200">
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
               <span className="text-xs font-medium text-slate-600">
-                Dashboard{count > 1 ? ` · ${count} charts` : ''}
+                Dashboard{(msg.chartCount ?? 0) > 1 ? ` · ${msg.chartCount} charts` : ''}
               </span>
               <div className="flex items-center gap-3">
                 <button
                   disabled={busy}
-                  onClick={() => onExplain(msg.dashboardJson!)}
+                  onClick={() => onExplain(msg.dashboardJson!, msg.title ?? null)}
                   className="flex items-center gap-1 text-xs font-medium text-violet-600 hover:text-violet-700 disabled:opacity-40"
                 >
                   <Lightbulb className="h-3.5 w-3.5" /> Explain
@@ -82,7 +82,7 @@ function MessageRow({
                 </button>
               </div>
             </div>
-            <InlineChart dashboardJson={msg.dashboardJson} onCount={setCount} />
+            <InlineChart dashboardJson={msg.dashboardJson} />
           </div>
         )}
       </div>
@@ -124,7 +124,6 @@ export function ConversationView() {
         message: q,
         datasourceId: dataset.datasourceId,
         dashboard: baseDashboard,
-        model: status?.model ?? undefined,
         stream: true,
       });
       s.on('progress', (m: string) => {
@@ -140,12 +139,15 @@ export function ConversationView() {
         }),
       );
       const result = await s.finalResponse();
+      const meta = result.dashboard ? dashboardMeta(result.dashboard) : null;
       updateActive((c) => {
         c.messages.push({
           id: uid(),
           role: 'assistant',
           html: md(streamed || result.explanation || ''),
           dashboardJson: result.dashboard,
+          title: meta?.title ?? null,
+          chartCount: meta?.chartCount ?? 0,
         });
         if (result.dashboard) c.dashboardJson = result.dashboard;
       });
@@ -164,11 +166,15 @@ export function ConversationView() {
     }
   }
 
-  async function explain(dashboardJson: string) {
+  async function explain(dashboardJson: string, title: string | null) {
     if (busy || !active) return;
     setBusy(true);
     updateActive((c) => {
-      c.messages.push({ id: uid(), role: 'user', text: 'Explain this chart' });
+      c.messages.push({
+        id: uid(),
+        role: 'user',
+        text: title ? `Explain this chart: "${title}"` : 'Explain this chart',
+      });
     });
     setStream({ html: '', logs: [] });
     let streamed = '';

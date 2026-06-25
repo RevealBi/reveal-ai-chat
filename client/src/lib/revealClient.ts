@@ -1,9 +1,6 @@
 import { RevealSdkSettings, MountainLightTheme } from 'reveal-sdk';
 import { RevealSdkClient } from '@revealbi/api';
-
-// Dev: React on :5173 talks to the ASP.NET host on :5111 (CORS-open dev policy).
-// Prod: the React build is served from the host's wwwroot, so the API is same-origin.
-const HOST = import.meta.env.DEV ? 'http://localhost:5111/' : window.location.origin + '/';
+import { API_HOST as HOST } from './serverUrl';
 
 const ACCENT = '#7c3aed';
 

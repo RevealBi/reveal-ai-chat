@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { RevealView, RevealUtility } from 'reveal-sdk';
+import { RevealView } from 'reveal-sdk';
+import { parseDashboard } from '../lib/dashboard';
 import { useApp } from '../lib/appContext';
 import { X, Maximize2, Minimize2 } from 'lucide-react';
 import { uid } from '../lib/conversations';
@@ -24,9 +25,7 @@ export function ArtifactPanel({ width }: { width?: number }) {
       rvRef.current = rv;
     }
     try {
-      rvRef.current.dashboard = RevealUtility.createDashboardFromJsonObject(
-        JSON.parse(panel.dashboardJson),
-      );
+      rvRef.current.dashboard = parseDashboard(panel.dashboardJson);
     } catch {
       /* invalid dashboard json */
     }

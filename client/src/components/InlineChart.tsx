@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { RevealView, RevealUtility } from 'reveal-sdk';
+import { RevealView } from 'reveal-sdk';
+import { parseDashboard } from '../lib/dashboard';
 import { uid } from '../lib/conversations';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -12,13 +13,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
  * createDashboardFromJsonObject. They must be read BEFORE the dashboard is handed
  * to the RevealView — assigning it to the view takes ownership of the collection.
  */
-export function InlineChart({
-  dashboardJson,
-  onCount,
-}: {
-  dashboardJson: string;
-  onCount?: (n: number) => void;
-}) {
+export function InlineChart({ dashboardJson }: { dashboardJson: string }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const idRef = useRef('rv-inline-' + uid());
   const rvRef = useRef<any>(null);
@@ -29,13 +24,12 @@ export function InlineChart({
   useEffect(() => {
     if (rvRef.current || !hostRef.current) return;
     try {
-      const dashboard = RevealUtility.createDashboardFromJsonObject(JSON.parse(dashboardJson));
+      const dashboard = parseDashboard(dashboardJson);
 
       // Capture the visualizations before the view takes the dashboard.
       const vizes: any[] = Array.from(dashboard.visualizations ?? []);
       vizRef.current = vizes;
       setCount(vizes.length);
-      onCount?.(vizes.length);
 
       const rv = new RevealView('#' + idRef.current);
       rv.singleVisualizationMode = true;

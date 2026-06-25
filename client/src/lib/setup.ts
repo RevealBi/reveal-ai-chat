@@ -4,7 +4,7 @@
 // One dialog captures the Reveal license (only when one isn't already present) plus the AI
 // provider, key, and model. The server applies all of it at startup, so saving restarts the app.
 
-const HOST = import.meta.env.DEV ? 'http://localhost:5111/' : window.location.origin + '/';
+import { API_HOST as HOST } from './serverUrl';
 
 const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
