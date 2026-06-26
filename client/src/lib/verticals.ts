@@ -1,88 +1,128 @@
 import type { VerticalConfig } from './types';
 
-// Each vertical maps to a Postgres table (server side: Reveal/Metadata/catalog.json +
-// DataSourceProvider). Prompts are tuned to each table's real columns so the golden
-// path always demos well — sales/profit/region, fuel/emissions, OEE/downtime, etc.
+// Each vertical maps to its own Postgres database (server side: Reveal/Metadata/catalog.json
+// + DataSourceProvider). Every database is a star schema with real foreign keys, a `dates`
+// dimension, and city coordinates. Prompts are tuned to each schema's real columns so the
+// golden path always demos well — trends, maps, rankings, rates, and mix.
 
 export const RETAIL: VerticalConfig = {
   id: 'retail',
   label: 'Retail / E-commerce',
-  tagline: 'Sales, margin, and regional performance',
+  tagline: 'Sales, revenue, and regional performance',
   datasourceId: 'retail',
   accent: '#7c3aed',
   prompts: [
-    'What are the top 5 sub-categories by total sales?',
-    'Show total profit by region',
-    'Which cities generate the most profit?',
-    'Trend monthly sales by category over time',
-    'Rank product categories by total sales and average discount',
+    'Show monthly sales revenue over the last two years',
+    'Show total revenue by state on a map',
+    'What are the top 10 products by revenue?',
+    'Which product categories sell the most?',
+    'What is the return rate by product category?',
+    'Compare revenue from Online versus In-Store channels',
   ],
 };
 
-export const AUTOMOTIVE: VerticalConfig = {
-  id: 'automotive',
-  label: 'Automotive',
-  tagline: 'Fuel economy & CO₂ across makes and models',
-  datasourceId: 'automotive',
-  accent: '#2563eb',
+export const FINANCE: VerticalConfig = {
+  id: 'finance',
+  label: 'Finance / Banking',
+  tagline: 'Transactions, balances, fraud & branches',
+  datasourceId: 'finance',
+  accent: '#ca8a04',
   prompts: [
-    'Which vehicle classes have the highest average CO₂ emissions?',
-    'Show average fuel consumption by make, ranked',
-    'How does engine size relate to CO₂ emissions?',
-    'Compare average fuel consumption across transmission types',
-    'Trend average CO₂ emissions by model year',
-  ],
-};
-
-export const MANUFACTURING: VerticalConfig = {
-  id: 'manufacturing',
-  label: 'Manufacturing',
-  tagline: 'Line efficiency, OEE, downtime & quality',
-  datasourceId: 'manufacturing',
-  accent: '#ea580c',
-  prompts: [
-    'Which production lines have the highest reject rates?',
-    'Show average OEE by shift',
-    'Compare total downtime minutes across production lines',
-    'What is the relationship between downtime and units produced?',
-    'Rank product SKUs by total units produced',
+    'Show monthly transaction volume over time',
+    'Break down spending by merchant category',
+    'What is the fraud rate over time?',
+    'What is the average account balance by account type?',
+    'Show branches by region on a map',
+    'Show the number of customers by segment',
   ],
 };
 
 export const HEALTHCARE: VerticalConfig = {
   id: 'healthcare',
   label: 'Healthcare',
-  tagline: 'Admissions, conditions, billing & length of stay',
+  tagline: 'Encounters, length of stay, cost & readmissions',
   datasourceId: 'healthcare',
   accent: '#0d9488',
   prompts: [
-    'What is the average billing amount by medical condition?',
-    'Show patient admissions by month',
-    'Compare average length of stay across admission types',
-    'Which insurance providers have the highest average billing amount?',
-    'Break down patients by age group and gender',
+    'Show monthly patient encounters over the last two years',
+    'What is the average length of stay by department?',
+    'What is the 30-day readmission rate over time?',
+    'Show total cost of care by service line',
+    'Show encounters by facility on a map',
+    'How many patients have each primary condition?',
+  ],
+};
+
+export const AUTOMOTIVE: VerticalConfig = {
+  id: 'automotive',
+  label: 'Automotive',
+  tagline: 'Dealer sales, vehicle mix & service quality',
+  datasourceId: 'automotive',
+  accent: '#2563eb',
+  prompts: [
+    'Show monthly vehicle sales over the last two years',
+    'Which dealers sell the most vehicles?',
+    'Break down sales by vehicle class (Sedan, SUV, Truck, EV, Coupe)',
+    'Compare new versus used vehicle sales',
+    'Show sales by region on a map',
+    'What is the service comeback rate by service type?',
+  ],
+};
+
+export const MANUFACTURING: VerticalConfig = {
+  id: 'manufacturing',
+  label: 'Manufacturing',
+  tagline: 'OEE, downtime, scrap & defects',
+  datasourceId: 'manufacturing',
+  accent: '#ea580c',
+  prompts: [
+    'Show average OEE by month',
+    'How does OEE compare across shifts (Day, Swing, Night)?',
+    'Which product families have the highest reject rate?',
+    'Show a Pareto of defects by defect type',
+    'Show total downtime minutes by plant',
+    'Show plants by region on a map',
   ],
 };
 
 export const ENERGY: VerticalConfig = {
   id: 'energy',
   label: 'Energy',
-  tagline: 'Generation mix across states and counties',
+  tagline: 'Generation mix, capacity & demand',
   datasourceId: 'energy',
   accent: '#16a34a',
   prompts: [
-    'Which states produce the most solar energy?',
-    'Compare total wind versus solar generation by state',
-    'Show total nuclear generation by state',
-    'What are the top 10 counties by coal production?',
-    'Rank states by total energy generation across all sources',
+    'Show total energy generated by fuel type over time',
+    'What is the generation mix by fuel type this year?',
+    'Compare capacity factor across fuel types',
+    'Show the average hourly demand load curve',
+    'Break down electricity demand by sector (Residential, Commercial, Industrial)',
+    'Show power plants by location on a map',
+  ],
+};
+
+export const TELECOM: VerticalConfig = {
+  id: 'telecom',
+  label: 'Telecom',
+  tagline: 'ARPU, churn & network performance',
+  datasourceId: 'telecom',
+  accent: '#0891b2',
+  prompts: [
+    'Show average data usage per subscriber by month',
+    'What is the average revenue per user (ARPU) by plan?',
+    'Show the subscriber status breakdown (Active, Suspended, Churned)',
+    'Show average network latency by technology (4G LTE versus 5G)',
+    'What is the dropped-call rate by month?',
+    'Map cell towers by location',
   ],
 };
 
 export const VERTICALS: VerticalConfig[] = [
   RETAIL,
+  FINANCE,
+  HEALTHCARE,
   AUTOMOTIVE,
   MANUFACTURING,
-  HEALTHCARE,
   ENERGY,
+  TELECOM,
 ];

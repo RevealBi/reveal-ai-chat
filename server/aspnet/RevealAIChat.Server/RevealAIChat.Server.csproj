@@ -28,4 +28,13 @@
        Vite dev server in development, and `npm run build` (or the Docker image's node stage) to
        bundle it into wwwroot for the all-in-one. F5 builds and runs only this server. -->
 
+  <!-- wwwroot only exists once the client is bundled into it (the Docker image, or `npm run build`).
+       Running just the server from source (F5 / `dotnet run`) has no wwwroot, and in Development the
+       static web assets loader throws DirectoryNotFoundException creating a file provider over the
+       missing folder. Create an empty wwwroot at build so the server runs standalone; it stays
+       gitignored, so nothing is committed and the served SPA (when present) is unaffected. -->
+  <Target Name="EnsureWwwRoot" BeforeTargets="Build">
+    <MakeDir Directories="$(MSBuildProjectDirectory)\wwwroot" Condition="!Exists('$(MSBuildProjectDirectory)\wwwroot')" />
+  </Target>
+
 </Project>

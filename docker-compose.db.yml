@@ -1,31 +1,31 @@
-# Reveal AI Chat — local database.
+# Reveal AI Chat — local database for "Run from source".
 #
-# One small Postgres container that backs the ASP.NET app during local development.
-# On first boot it auto-seeds the 5 vertical tables from db/seed/*.sql (Postgres runs
-# everything in /docker-entrypoint-initdb.d once, against an empty data volume).
+# Use this ONLY when you run the server/client from source (F5 / npm run dev). It publishes
+# the database on localhost:5432 so the locally-debugged server can reach it. The full Docker
+# app (docker-compose.app.yml) starts its OWN copy of this same image internally — do not use
+# this file for that.
 #
-#   docker compose -f docker-compose.db.yml up -d      # start (seeds on first run; instant thereafter)
-#   docker compose -f docker-compose.db.yml down       # stop (keeps data)
-#   docker compose -f docker-compose.db.yml down -v    # stop + wipe data (forces a fresh re-seed next time)
+# It's the exact same image and data as the full app (brianlagunas/reveal-samples-db): seven
+# ready-made sample databases — retail, finance, healthcare, automotive, manufacturing, energy,
+# telecom — with the data baked in, so there's nothing to seed and no data volume to manage.
+# Every start is a clean, fully-populated server.
+#
+# A distinct Compose project name keeps this isolated from the full app, so the two never
+# recreate or clobber each other's containers.
+#
+#   docker compose -f docker-compose.db.yml up -d      # start
+#   docker compose -f docker-compose.db.yml down       # stop
+
+name: reveal-ai-chat-db
 
 services:
   db:
-    image: postgres:16-alpine
+    image: brianlagunas/reveal-samples-db:1.0.0
     container_name: reveal-ai-chat-db
-    environment:
-      POSTGRES_DB: revealaichat
-      POSTGRES_USER: reveal
-      POSTGRES_PASSWORD: reveal_ai_chat
     ports:
       - "5432:5432"
-    volumes:
-      - ./db/seed:/docker-entrypoint-initdb.d:ro
-      - reveal-ai-chat-pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U reveal -d revealaichat"]
+      test: ["CMD-SHELL", "pg_isready -U reveal -d retail"]
       interval: 3s
       timeout: 3s
       retries: 30
-
-volumes:
-  reveal-ai-chat-pgdata:

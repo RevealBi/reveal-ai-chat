@@ -1,38 +1,2113 @@
 {
   "Datasources": [
     {
-      "Id": "automotive",
-      "Provider": "PostgreSQL",
-      "Databases": [
-        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "public.automotive" } ] }
-      ]
-    },
-    {
       "Id": "retail",
       "Provider": "PostgreSQL",
       "Databases": [
-        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "public.retail" } ] }
+        {
+          "Name": "retail",
+          "DiscoveryMode": "Default",
+          "Tables": [
+            {
+              "Name": "public.categories",
+              "Description": "Product categories grouped into departments for merchandising analysis.",
+              "Fields": [
+                {
+                  "Name": "category_id",
+                  "Alias": "Category ID",
+                  "Description": "Surrogate key for the category."
+                },
+                {
+                  "Name": "category_name",
+                  "Alias": "Category Name",
+                  "Description": "Category name such as Laptops or Coffee."
+                },
+                {
+                  "Name": "department",
+                  "Alias": "Department",
+                  "Description": "Higher level department such as Electronics or Grocery."
+                }
+              ]
+            },
+            {
+              "Name": "public.customers",
+              "Description": "People and organizations that place orders, segmented for marketing and value analysis.",
+              "Fields": [
+                {
+                  "Name": "customer_id",
+                  "Alias": "Customer ID",
+                  "Description": "Surrogate key for the customer."
+                },
+                {
+                  "Name": "first_name",
+                  "Alias": "First Name",
+                  "Description": "Customer first name."
+                },
+                {
+                  "Name": "last_name",
+                  "Alias": "Last Name",
+                  "Description": "Customer last name."
+                },
+                {
+                  "Name": "email",
+                  "Alias": "Email",
+                  "Description": "Customer email address (synthetic, non-routable domains)."
+                },
+                {
+                  "Name": "segment",
+                  "Alias": "Segment",
+                  "Description": "Customer segment: Consumer, Corporate, or Small Business."
+                },
+                {
+                  "Name": "city",
+                  "Alias": "City",
+                  "Description": "Customer city."
+                },
+                {
+                  "Name": "state",
+                  "Alias": "State",
+                  "Description": "Two letter US state code for the customer."
+                },
+                {
+                  "Name": "region_id",
+                  "Alias": "Region ID",
+                  "Description": "Region this customer rolls up to."
+                },
+                {
+                  "Name": "latitude",
+                  "Alias": "Latitude",
+                  "Description": "Customer latitude for map visualizations."
+                },
+                {
+                  "Name": "longitude",
+                  "Alias": "Longitude",
+                  "Description": "Customer longitude for map visualizations."
+                },
+                {
+                  "Name": "signup_date",
+                  "Alias": "Signup Date",
+                  "Description": "Date the customer first registered."
+                }
+              ]
+            },
+            {
+              "Name": "public.dates",
+              "Description": "Calendar date dimension, one row per day, used to filter and group every sales fact by time.",
+              "Fields": [
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer surrogate key in yyyymmdd form that orders and order_items join to."
+                },
+                {
+                  "Name": "full_date",
+                  "Alias": "Full Date",
+                  "Description": "The actual calendar date."
+                },
+                {
+                  "Name": "year",
+                  "Alias": "Year",
+                  "Description": "Four digit calendar year."
+                },
+                {
+                  "Name": "quarter",
+                  "Alias": "Quarter",
+                  "Description": "Calendar quarter from 1 to 4."
+                },
+                {
+                  "Name": "month",
+                  "Alias": "Month",
+                  "Description": "Calendar month number from 1 to 12."
+                },
+                {
+                  "Name": "month_name",
+                  "Alias": "Month Name",
+                  "Description": "Full month name such as January."
+                },
+                {
+                  "Name": "day_of_month",
+                  "Alias": "Day Of Month",
+                  "Description": "Day number within the month from 1 to 31."
+                },
+                {
+                  "Name": "day_of_week",
+                  "Alias": "Day Of Week",
+                  "Description": "Day of week where 1 is Monday and 7 is Sunday."
+                },
+                {
+                  "Name": "day_name",
+                  "Alias": "Day Name",
+                  "Description": "Full weekday name such as Monday."
+                },
+                {
+                  "Name": "is_weekend",
+                  "Alias": "Is Weekend",
+                  "Description": "True when the day is Saturday or Sunday."
+                },
+                {
+                  "Name": "is_holiday",
+                  "Alias": "Is Holiday",
+                  "Description": "True when the day is a recognized US retail holiday."
+                }
+              ]
+            },
+            {
+              "Name": "public.order_items",
+              "Description": "Order line detail, one row per product on an order, for basket and product level analysis.",
+              "Fields": [
+                {
+                  "Name": "order_item_id",
+                  "Alias": "Order Item ID",
+                  "Description": "Surrogate key for the order line."
+                },
+                {
+                  "Name": "order_id",
+                  "Alias": "Order ID",
+                  "Description": "Order this line belongs to."
+                },
+                {
+                  "Name": "product_id",
+                  "Alias": "Product ID",
+                  "Description": "Product sold on this line."
+                },
+                {
+                  "Name": "quantity",
+                  "Alias": "Quantity",
+                  "Description": "Units sold on this line."
+                },
+                {
+                  "Name": "unit_price",
+                  "Alias": "Unit Price",
+                  "Description": "Price per unit charged on this line in US dollars."
+                },
+                {
+                  "Name": "discount",
+                  "Alias": "Discount",
+                  "Description": "Fractional discount applied to the line, 0 to 1."
+                },
+                {
+                  "Name": "line_total",
+                  "Alias": "Line Total",
+                  "Description": "Net dollars for the line after discount."
+                },
+                {
+                  "Name": "is_returned",
+                  "Alias": "Is Returned",
+                  "Description": "True when this line was returned."
+                }
+              ]
+            },
+            {
+              "Name": "public.orders",
+              "Description": "Order header, one row per placed order, summarizing who bought, where, when, and the total.",
+              "Fields": [
+                {
+                  "Name": "order_id",
+                  "Alias": "Order ID",
+                  "Description": "Surrogate key for the order."
+                },
+                {
+                  "Name": "order_date",
+                  "Alias": "Order Date",
+                  "Description": "Date the order was placed."
+                },
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer date key joining to the dates dimension."
+                },
+                {
+                  "Name": "customer_id",
+                  "Alias": "Customer ID",
+                  "Description": "Customer who placed the order."
+                },
+                {
+                  "Name": "store_id",
+                  "Alias": "Store ID",
+                  "Description": "Store the order was attributed to."
+                },
+                {
+                  "Name": "channel",
+                  "Alias": "Channel",
+                  "Description": "Sales channel: Online or In-Store."
+                },
+                {
+                  "Name": "order_status",
+                  "Alias": "Order Status",
+                  "Description": "Order status: Completed, Returned, or Pending."
+                },
+                {
+                  "Name": "order_total",
+                  "Alias": "Order Total",
+                  "Description": "Net order total in US dollars after line discounts."
+                }
+              ]
+            },
+            {
+              "Name": "public.products",
+              "Description": "Items available for sale, priced with a cost so margin can be computed.",
+              "Fields": [
+                {
+                  "Name": "product_id",
+                  "Alias": "Product ID",
+                  "Description": "Surrogate key for the product."
+                },
+                {
+                  "Name": "product_name",
+                  "Alias": "Product Name",
+                  "Description": "Display name of the product."
+                },
+                {
+                  "Name": "sku",
+                  "Alias": "SKU",
+                  "Description": "Stock keeping unit, unique per product."
+                },
+                {
+                  "Name": "category_id",
+                  "Alias": "Category ID",
+                  "Description": "Category this product belongs to."
+                },
+                {
+                  "Name": "unit_price",
+                  "Alias": "Unit Price",
+                  "Description": "List selling price per unit in US dollars."
+                },
+                {
+                  "Name": "unit_cost",
+                  "Alias": "Unit Cost",
+                  "Description": "Cost to the business per unit in US dollars."
+                }
+              ]
+            },
+            {
+              "Name": "public.regions",
+              "Description": "Geographic sales regions that group stores and customers for territory analysis.",
+              "Fields": [
+                {
+                  "Name": "region_id",
+                  "Alias": "Region ID",
+                  "Description": "Surrogate key for the region."
+                },
+                {
+                  "Name": "region_name",
+                  "Alias": "Region Name",
+                  "Description": "Region name such as West, South, Midwest, or Northeast."
+                },
+                {
+                  "Name": "country",
+                  "Alias": "Country",
+                  "Description": "Country the region belongs to."
+                }
+              ]
+            },
+            {
+              "Name": "public.stores",
+              "Description": "Physical retail stores where orders are placed, with real coordinates for mapping.",
+              "Fields": [
+                {
+                  "Name": "store_id",
+                  "Alias": "Store ID",
+                  "Description": "Surrogate key for the store."
+                },
+                {
+                  "Name": "store_name",
+                  "Alias": "Store Name",
+                  "Description": "Display name of the store."
+                },
+                {
+                  "Name": "city",
+                  "Alias": "City",
+                  "Description": "City the store is located in."
+                },
+                {
+                  "Name": "state",
+                  "Alias": "State",
+                  "Description": "Two letter US state code for the store."
+                },
+                {
+                  "Name": "region_id",
+                  "Alias": "Region ID",
+                  "Description": "Region this store rolls up to."
+                },
+                {
+                  "Name": "latitude",
+                  "Alias": "Latitude",
+                  "Description": "Store latitude for map visualizations."
+                },
+                {
+                  "Name": "longitude",
+                  "Alias": "Longitude",
+                  "Description": "Store longitude for map visualizations."
+                },
+                {
+                  "Name": "opened_date",
+                  "Alias": "Opened Date",
+                  "Description": "Date the store opened."
+                }
+              ]
+            }
+          ]
+        }
       ]
     },
     {
-      "Id": "manufacturing",
+      "Id": "finance",
       "Provider": "PostgreSQL",
       "Databases": [
-        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "public.manufacturing" } ] }
+        {
+          "Name": "finance",
+          "DiscoveryMode": "Default",
+          "Tables": [
+            {
+              "Name": "public.account_types",
+              "Description": "Catalog of account products grouped into deposit, credit, and loan categories.",
+              "Fields": [
+                {
+                  "Name": "account_type_id",
+                  "Alias": "Account Type ID",
+                  "Description": "Surrogate key for the account type."
+                },
+                {
+                  "Name": "type_name",
+                  "Alias": "Type Name",
+                  "Description": "Account product name such as Checking or Mortgage."
+                },
+                {
+                  "Name": "category",
+                  "Alias": "Category",
+                  "Description": "High level grouping: Deposit, Credit, or Loan."
+                }
+              ]
+            },
+            {
+              "Name": "public.accounts",
+              "Description": "Individual accounts held by customers, each tied to a product type and home branch.",
+              "Fields": [
+                {
+                  "Name": "account_id",
+                  "Alias": "Account ID",
+                  "Description": "Surrogate key for the account."
+                },
+                {
+                  "Name": "customer_id",
+                  "Alias": "Customer ID",
+                  "Description": "Customer who owns the account."
+                },
+                {
+                  "Name": "account_type_id",
+                  "Alias": "Account Type ID",
+                  "Description": "Product type of the account."
+                },
+                {
+                  "Name": "branch_id",
+                  "Alias": "Branch ID",
+                  "Description": "Home branch of the account."
+                },
+                {
+                  "Name": "opened_date",
+                  "Alias": "Opened Date",
+                  "Description": "Date the account was opened."
+                },
+                {
+                  "Name": "current_balance",
+                  "Alias": "Current Balance",
+                  "Description": "Current balance in US dollars; negative for credit and loan balances owed."
+                },
+                {
+                  "Name": "status",
+                  "Alias": "Status",
+                  "Description": "Account status: Active, Dormant, or Closed."
+                }
+              ]
+            },
+            {
+              "Name": "public.branches",
+              "Description": "Bank branch locations with real coordinates for mapping deposits and activity.",
+              "Fields": [
+                {
+                  "Name": "branch_id",
+                  "Alias": "Branch ID",
+                  "Description": "Surrogate key for the branch."
+                },
+                {
+                  "Name": "branch_name",
+                  "Alias": "Branch Name",
+                  "Description": "Display name of the branch."
+                },
+                {
+                  "Name": "city",
+                  "Alias": "City",
+                  "Description": "City the branch is in."
+                },
+                {
+                  "Name": "state",
+                  "Alias": "State",
+                  "Description": "Two letter US state code for the branch."
+                },
+                {
+                  "Name": "region",
+                  "Alias": "Region",
+                  "Description": "Region the branch rolls up to."
+                },
+                {
+                  "Name": "latitude",
+                  "Alias": "Latitude",
+                  "Description": "Branch latitude for map visualizations."
+                },
+                {
+                  "Name": "longitude",
+                  "Alias": "Longitude",
+                  "Description": "Branch longitude for map visualizations."
+                },
+                {
+                  "Name": "opened_date",
+                  "Alias": "Opened Date",
+                  "Description": "Date the branch opened."
+                }
+              ]
+            },
+            {
+              "Name": "public.customers",
+              "Description": "Banking customers segmented by relationship type, with credit score and location.",
+              "Fields": [
+                {
+                  "Name": "customer_id",
+                  "Alias": "Customer ID",
+                  "Description": "Surrogate key for the customer."
+                },
+                {
+                  "Name": "first_name",
+                  "Alias": "First Name",
+                  "Description": "Customer first name."
+                },
+                {
+                  "Name": "last_name",
+                  "Alias": "Last Name",
+                  "Description": "Customer last name."
+                },
+                {
+                  "Name": "segment",
+                  "Alias": "Segment",
+                  "Description": "Customer segment: Retail, Wealth, or Business."
+                },
+                {
+                  "Name": "city",
+                  "Alias": "City",
+                  "Description": "Customer city."
+                },
+                {
+                  "Name": "state",
+                  "Alias": "State",
+                  "Description": "Two letter US state code for the customer."
+                },
+                {
+                  "Name": "region",
+                  "Alias": "Region",
+                  "Description": "Region the customer rolls up to."
+                },
+                {
+                  "Name": "latitude",
+                  "Alias": "Latitude",
+                  "Description": "Customer latitude for map visualizations."
+                },
+                {
+                  "Name": "longitude",
+                  "Alias": "Longitude",
+                  "Description": "Customer longitude for map visualizations."
+                },
+                {
+                  "Name": "credit_score",
+                  "Alias": "Credit Score",
+                  "Description": "FICO-style credit score from roughly 300 to 850."
+                },
+                {
+                  "Name": "join_date",
+                  "Alias": "Join Date",
+                  "Description": "Date the customer opened their first account."
+                }
+              ]
+            },
+            {
+              "Name": "public.dates",
+              "Description": "Calendar date dimension, one row per day, used to filter and group transactions by time.",
+              "Fields": [
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer surrogate key in yyyymmdd form that transactions join to."
+                },
+                {
+                  "Name": "full_date",
+                  "Alias": "Full Date",
+                  "Description": "The actual calendar date."
+                },
+                {
+                  "Name": "year",
+                  "Alias": "Year",
+                  "Description": "Four digit calendar year."
+                },
+                {
+                  "Name": "quarter",
+                  "Alias": "Quarter",
+                  "Description": "Calendar quarter from 1 to 4."
+                },
+                {
+                  "Name": "month",
+                  "Alias": "Month",
+                  "Description": "Calendar month number from 1 to 12."
+                },
+                {
+                  "Name": "month_name",
+                  "Alias": "Month Name",
+                  "Description": "Full month name such as January."
+                },
+                {
+                  "Name": "day_of_month",
+                  "Alias": "Day Of Month",
+                  "Description": "Day number within the month from 1 to 31."
+                },
+                {
+                  "Name": "day_of_week",
+                  "Alias": "Day Of Week",
+                  "Description": "Day of week where 1 is Monday and 7 is Sunday."
+                },
+                {
+                  "Name": "day_name",
+                  "Alias": "Day Name",
+                  "Description": "Full weekday name such as Monday."
+                },
+                {
+                  "Name": "is_weekend",
+                  "Alias": "Is Weekend",
+                  "Description": "True when the day is Saturday or Sunday."
+                },
+                {
+                  "Name": "is_holiday",
+                  "Alias": "Is Holiday",
+                  "Description": "True when the day is a recognized US bank holiday."
+                }
+              ]
+            },
+            {
+              "Name": "public.transactions",
+              "Description": "Posted account transactions over time, the core fact for spend, cash flow, and fraud analysis.",
+              "Fields": [
+                {
+                  "Name": "transaction_id",
+                  "Alias": "Transaction ID",
+                  "Description": "Surrogate key for the transaction."
+                },
+                {
+                  "Name": "account_id",
+                  "Alias": "Account ID",
+                  "Description": "Account the transaction posted to."
+                },
+                {
+                  "Name": "txn_date",
+                  "Alias": "Txn Date",
+                  "Description": "Date the transaction posted."
+                },
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer date key joining to the dates dimension."
+                },
+                {
+                  "Name": "amount",
+                  "Alias": "Amount",
+                  "Description": "Transaction amount in US dollars, always positive; use direction for sign."
+                },
+                {
+                  "Name": "direction",
+                  "Alias": "Direction",
+                  "Description": "Whether the transaction is a Credit (money in) or Debit (money out)."
+                },
+                {
+                  "Name": "merchant_category",
+                  "Alias": "Merchant Category",
+                  "Description": "Spending category such as Groceries, Payroll, or Utilities."
+                },
+                {
+                  "Name": "is_fraud",
+                  "Alias": "Is Fraud",
+                  "Description": "True when the transaction was flagged as fraudulent."
+                }
+              ]
+            }
+          ]
+        }
       ]
     },
     {
       "Id": "healthcare",
       "Provider": "PostgreSQL",
       "Databases": [
-        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "public.healthcare" } ] }
+        {
+          "Name": "healthcare",
+          "DiscoveryMode": "Default",
+          "Tables": [
+            {
+              "Name": "public.dates",
+              "Description": "Calendar date dimension, one row per day, used to filter and group encounters by time.",
+              "Fields": [
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer surrogate key in yyyymmdd form that encounters join to."
+                },
+                {
+                  "Name": "full_date",
+                  "Alias": "Full Date",
+                  "Description": "The actual calendar date."
+                },
+                {
+                  "Name": "year",
+                  "Alias": "Year",
+                  "Description": "Four digit calendar year."
+                },
+                {
+                  "Name": "quarter",
+                  "Alias": "Quarter",
+                  "Description": "Calendar quarter from 1 to 4."
+                },
+                {
+                  "Name": "month",
+                  "Alias": "Month",
+                  "Description": "Calendar month number from 1 to 12."
+                },
+                {
+                  "Name": "month_name",
+                  "Alias": "Month Name",
+                  "Description": "Full month name such as January."
+                },
+                {
+                  "Name": "day_of_month",
+                  "Alias": "Day Of Month",
+                  "Description": "Day number within the month from 1 to 31."
+                },
+                {
+                  "Name": "day_of_week",
+                  "Alias": "Day Of Week",
+                  "Description": "Day of week where 1 is Monday and 7 is Sunday."
+                },
+                {
+                  "Name": "day_name",
+                  "Alias": "Day Name",
+                  "Description": "Full weekday name such as Monday."
+                },
+                {
+                  "Name": "is_weekend",
+                  "Alias": "Is Weekend",
+                  "Description": "True when the day is Saturday or Sunday."
+                },
+                {
+                  "Name": "is_holiday",
+                  "Alias": "Is Holiday",
+                  "Description": "True when the day is a recognized US holiday."
+                }
+              ]
+            },
+            {
+              "Name": "public.departments",
+              "Description": "Clinical departments grouped into service lines for cost and utilization analysis.",
+              "Fields": [
+                {
+                  "Name": "department_id",
+                  "Alias": "Department ID",
+                  "Description": "Surrogate key for the department."
+                },
+                {
+                  "Name": "department_name",
+                  "Alias": "Department Name",
+                  "Description": "Department name such as Cardiology or Orthopedics."
+                },
+                {
+                  "Name": "service_line",
+                  "Alias": "Service Line",
+                  "Description": "Higher level service line: Medical, Surgical, Diagnostic, or Emergency."
+                }
+              ]
+            },
+            {
+              "Name": "public.encounter_charges",
+              "Description": "Itemized charge lines for an encounter, one row per billed service, for cost-of-care breakdowns.",
+              "Fields": [
+                {
+                  "Name": "charge_id",
+                  "Alias": "Charge ID",
+                  "Description": "Surrogate key for the charge line."
+                },
+                {
+                  "Name": "encounter_id",
+                  "Alias": "Encounter ID",
+                  "Description": "Encounter this charge line belongs to."
+                },
+                {
+                  "Name": "charge_category",
+                  "Alias": "Charge Category",
+                  "Description": "Charge category such as Room & Board, Lab, Imaging, Pharmacy, Surgery, or Consultation."
+                },
+                {
+                  "Name": "quantity",
+                  "Alias": "Quantity",
+                  "Description": "Number of units billed on this line."
+                },
+                {
+                  "Name": "unit_price",
+                  "Alias": "Unit Price",
+                  "Description": "Price per unit charged on this line in US dollars."
+                },
+                {
+                  "Name": "line_total",
+                  "Alias": "Line Total",
+                  "Description": "Net dollars for the line, quantity times unit price."
+                }
+              ]
+            },
+            {
+              "Name": "public.encounters",
+              "Description": "Encounter header, one row per admission or visit, summarizing who was seen, where, when, length of stay, and the billed total.",
+              "Fields": [
+                {
+                  "Name": "encounter_id",
+                  "Alias": "Encounter ID",
+                  "Description": "Surrogate key for the encounter."
+                },
+                {
+                  "Name": "patient_id",
+                  "Alias": "Patient ID",
+                  "Description": "Patient seen during the encounter."
+                },
+                {
+                  "Name": "facility_id",
+                  "Alias": "Facility ID",
+                  "Description": "Facility where the encounter took place."
+                },
+                {
+                  "Name": "department_id",
+                  "Alias": "Department ID",
+                  "Description": "Clinical department that handled the encounter."
+                },
+                {
+                  "Name": "admit_date",
+                  "Alias": "Admit Date",
+                  "Description": "Date the patient was admitted or seen."
+                },
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer date key for the admit date joining to the dates dimension."
+                },
+                {
+                  "Name": "discharge_date",
+                  "Alias": "Discharge Date",
+                  "Description": "Date the patient was discharged; equals the admit date for same-day visits."
+                },
+                {
+                  "Name": "encounter_type",
+                  "Alias": "Encounter Type",
+                  "Description": "Encounter type: Inpatient, Outpatient, or Emergency."
+                },
+                {
+                  "Name": "length_of_stay",
+                  "Alias": "Length Of Stay",
+                  "Description": "Length of stay in days, zero for same-day outpatient or emergency visits."
+                },
+                {
+                  "Name": "encounter_total",
+                  "Alias": "Encounter Total",
+                  "Description": "Total billed charge for the encounter in US dollars, equal to the sum of its charge lines."
+                },
+                {
+                  "Name": "is_readmission",
+                  "Alias": "Is Readmission",
+                  "Description": "True when this encounter is a 30-day readmission of a prior inpatient stay."
+                }
+              ]
+            },
+            {
+              "Name": "public.facilities",
+              "Description": "Care facilities such as hospitals and clinics, with real coordinates for mapping and bed capacity.",
+              "Fields": [
+                {
+                  "Name": "facility_id",
+                  "Alias": "Facility ID",
+                  "Description": "Surrogate key for the facility."
+                },
+                {
+                  "Name": "facility_name",
+                  "Alias": "Facility Name",
+                  "Description": "Display name of the facility."
+                },
+                {
+                  "Name": "facility_type",
+                  "Alias": "Facility Type",
+                  "Description": "Facility type: Hospital, Clinic, Urgent Care, or Surgical Center."
+                },
+                {
+                  "Name": "city",
+                  "Alias": "City",
+                  "Description": "City the facility is located in."
+                },
+                {
+                  "Name": "state",
+                  "Alias": "State",
+                  "Description": "Two letter US state code for the facility."
+                },
+                {
+                  "Name": "region",
+                  "Alias": "Region",
+                  "Description": "Region the facility rolls up to."
+                },
+                {
+                  "Name": "latitude",
+                  "Alias": "Latitude",
+                  "Description": "Facility latitude for map visualizations."
+                },
+                {
+                  "Name": "longitude",
+                  "Alias": "Longitude",
+                  "Description": "Facility longitude for map visualizations."
+                },
+                {
+                  "Name": "bed_count",
+                  "Alias": "Bed Count",
+                  "Description": "Number of licensed inpatient beds at the facility."
+                },
+                {
+                  "Name": "opened_date",
+                  "Alias": "Opened Date",
+                  "Description": "Date the facility opened."
+                }
+              ]
+            },
+            {
+              "Name": "public.patients",
+              "Description": "Patients receiving care, with demographics, a primary condition, modeled readmission risk, and home location.",
+              "Fields": [
+                {
+                  "Name": "patient_id",
+                  "Alias": "Patient ID",
+                  "Description": "Surrogate key for the patient."
+                },
+                {
+                  "Name": "first_name",
+                  "Alias": "First Name",
+                  "Description": "Patient first name."
+                },
+                {
+                  "Name": "last_name",
+                  "Alias": "Last Name",
+                  "Description": "Patient last name."
+                },
+                {
+                  "Name": "gender",
+                  "Alias": "Gender",
+                  "Description": "Patient gender: Female or Male."
+                },
+                {
+                  "Name": "birth_date",
+                  "Alias": "Birth Date",
+                  "Description": "Patient date of birth."
+                },
+                {
+                  "Name": "age_years",
+                  "Alias": "Age Years",
+                  "Description": "Patient age in whole years."
+                },
+                {
+                  "Name": "primary_condition",
+                  "Alias": "Primary Condition",
+                  "Description": "Primary chronic condition such as Diabetes or Hypertension."
+                },
+                {
+                  "Name": "readmission_risk",
+                  "Alias": "Readmission Risk",
+                  "Description": "Modeled probability from 0 to 1 that the patient is readmitted within 30 days."
+                },
+                {
+                  "Name": "city",
+                  "Alias": "City",
+                  "Description": "Patient home city."
+                },
+                {
+                  "Name": "state",
+                  "Alias": "State",
+                  "Description": "Two letter US state code for the patient home."
+                },
+                {
+                  "Name": "region",
+                  "Alias": "Region",
+                  "Description": "Region the patient rolls up to."
+                },
+                {
+                  "Name": "latitude",
+                  "Alias": "Latitude",
+                  "Description": "Patient home latitude for map visualizations."
+                },
+                {
+                  "Name": "longitude",
+                  "Alias": "Longitude",
+                  "Description": "Patient home longitude for map visualizations."
+                },
+                {
+                  "Name": "registered_date",
+                  "Alias": "Registered Date",
+                  "Description": "Date the patient first registered with the provider."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Id": "automotive",
+      "Provider": "PostgreSQL",
+      "Databases": [
+        {
+          "Name": "automotive",
+          "DiscoveryMode": "Default",
+          "Tables": [
+            {
+              "Name": "public.dates",
+              "Description": "Calendar date dimension, one row per day, used to filter and group sales and service by time.",
+              "Fields": [
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer surrogate key in yyyymmdd form that sales and service visits join to."
+                },
+                {
+                  "Name": "full_date",
+                  "Alias": "Full Date",
+                  "Description": "The actual calendar date."
+                },
+                {
+                  "Name": "year",
+                  "Alias": "Year",
+                  "Description": "Four digit calendar year."
+                },
+                {
+                  "Name": "quarter",
+                  "Alias": "Quarter",
+                  "Description": "Calendar quarter from 1 to 4."
+                },
+                {
+                  "Name": "month",
+                  "Alias": "Month",
+                  "Description": "Calendar month number from 1 to 12."
+                },
+                {
+                  "Name": "month_name",
+                  "Alias": "Month Name",
+                  "Description": "Full month name such as January."
+                },
+                {
+                  "Name": "day_of_month",
+                  "Alias": "Day Of Month",
+                  "Description": "Day number within the month from 1 to 31."
+                },
+                {
+                  "Name": "day_of_week",
+                  "Alias": "Day Of Week",
+                  "Description": "Day of week where 1 is Monday and 7 is Sunday."
+                },
+                {
+                  "Name": "day_name",
+                  "Alias": "Day Name",
+                  "Description": "Full weekday name such as Monday."
+                },
+                {
+                  "Name": "is_weekend",
+                  "Alias": "Is Weekend",
+                  "Description": "True when the day is Saturday or Sunday."
+                },
+                {
+                  "Name": "is_holiday",
+                  "Alias": "Is Holiday",
+                  "Description": "True when the day is a recognized US holiday."
+                }
+              ]
+            },
+            {
+              "Name": "public.dealers",
+              "Description": "Dealership locations with real coordinates for mapping, a size tier, and a customer satisfaction index.",
+              "Fields": [
+                {
+                  "Name": "dealer_id",
+                  "Alias": "Dealer ID",
+                  "Description": "Surrogate key for the dealer."
+                },
+                {
+                  "Name": "dealer_name",
+                  "Alias": "Dealer Name",
+                  "Description": "Display name of the dealership."
+                },
+                {
+                  "Name": "dealer_tier",
+                  "Alias": "Dealer Tier",
+                  "Description": "Dealer size tier: Flagship, Standard, or Compact."
+                },
+                {
+                  "Name": "city",
+                  "Alias": "City",
+                  "Description": "City the dealer is located in."
+                },
+                {
+                  "Name": "state",
+                  "Alias": "State",
+                  "Description": "Two letter US state code for the dealer."
+                },
+                {
+                  "Name": "region",
+                  "Alias": "Region",
+                  "Description": "Region the dealer rolls up to."
+                },
+                {
+                  "Name": "latitude",
+                  "Alias": "Latitude",
+                  "Description": "Dealer latitude for map visualizations."
+                },
+                {
+                  "Name": "longitude",
+                  "Alias": "Longitude",
+                  "Description": "Dealer longitude for map visualizations."
+                },
+                {
+                  "Name": "csi_score",
+                  "Alias": "CSI Score",
+                  "Description": "Customer satisfaction index from 0 to 100."
+                },
+                {
+                  "Name": "opened_date",
+                  "Alias": "Opened Date",
+                  "Description": "Date the dealership opened."
+                }
+              ]
+            },
+            {
+              "Name": "public.sale_lines",
+              "Description": "Itemized lines of a sale, one row per priced component, for gross-by-line and attach-rate analysis.",
+              "Fields": [
+                {
+                  "Name": "sale_line_id",
+                  "Alias": "Sale Line ID",
+                  "Description": "Surrogate key for the sale line."
+                },
+                {
+                  "Name": "sale_id",
+                  "Alias": "Sale ID",
+                  "Description": "Sale this line belongs to."
+                },
+                {
+                  "Name": "line_type",
+                  "Alias": "Line Type",
+                  "Description": "Line type: Vehicle, Accessory, Warranty, or Fee."
+                },
+                {
+                  "Name": "description",
+                  "Alias": "Description",
+                  "Description": "Human readable description of the line item."
+                },
+                {
+                  "Name": "quantity",
+                  "Alias": "Quantity",
+                  "Description": "Number of units on this line."
+                },
+                {
+                  "Name": "unit_price",
+                  "Alias": "Unit Price",
+                  "Description": "Price per unit on this line in US dollars."
+                },
+                {
+                  "Name": "line_total",
+                  "Alias": "Line Total",
+                  "Description": "Net dollars for the line, quantity times unit price."
+                }
+              ]
+            },
+            {
+              "Name": "public.sales",
+              "Description": "Sale header, one row per vehicle deal, summarizing the dealer, vehicle, financing, and out-the-door total.",
+              "Fields": [
+                {
+                  "Name": "sale_id",
+                  "Alias": "Sale ID",
+                  "Description": "Surrogate key for the sale."
+                },
+                {
+                  "Name": "dealer_id",
+                  "Alias": "Dealer ID",
+                  "Description": "Dealer that made the sale."
+                },
+                {
+                  "Name": "vehicle_id",
+                  "Alias": "Vehicle ID",
+                  "Description": "Vehicle model sold."
+                },
+                {
+                  "Name": "sale_date",
+                  "Alias": "Sale Date",
+                  "Description": "Date the sale closed."
+                },
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer date key joining to the dates dimension."
+                },
+                {
+                  "Name": "finance_type",
+                  "Alias": "Finance Type",
+                  "Description": "How the sale was paid: Cash, Loan, or Lease."
+                },
+                {
+                  "Name": "is_new",
+                  "Alias": "Is New",
+                  "Description": "True for a new vehicle, false for a used vehicle."
+                },
+                {
+                  "Name": "sale_total",
+                  "Alias": "Sale Total",
+                  "Description": "Out-the-door total for the sale in US dollars, equal to the sum of its sale lines."
+                }
+              ]
+            },
+            {
+              "Name": "public.service_visits",
+              "Description": "Service department visits over time, the fact for service revenue, mileage, and comeback-rate analysis.",
+              "Fields": [
+                {
+                  "Name": "service_id",
+                  "Alias": "Service ID",
+                  "Description": "Surrogate key for the service visit."
+                },
+                {
+                  "Name": "dealer_id",
+                  "Alias": "Dealer ID",
+                  "Description": "Dealer service department that performed the work."
+                },
+                {
+                  "Name": "vehicle_id",
+                  "Alias": "Vehicle ID",
+                  "Description": "Vehicle model serviced."
+                },
+                {
+                  "Name": "service_date",
+                  "Alias": "Service Date",
+                  "Description": "Date the service was performed."
+                },
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer date key joining to the dates dimension."
+                },
+                {
+                  "Name": "service_type",
+                  "Alias": "Service Type",
+                  "Description": "Type of service: Maintenance, Repair, Recall, or Warranty."
+                },
+                {
+                  "Name": "mileage",
+                  "Alias": "Mileage",
+                  "Description": "Odometer reading at the time of service in miles."
+                },
+                {
+                  "Name": "labor_hours",
+                  "Alias": "Labor Hours",
+                  "Description": "Billed labor hours for the visit."
+                },
+                {
+                  "Name": "service_cost",
+                  "Alias": "Service Cost",
+                  "Description": "Total cost charged for the service visit in US dollars."
+                },
+                {
+                  "Name": "is_comeback",
+                  "Alias": "Is Comeback",
+                  "Description": "True when the visit is a repeat repair for the same issue (a comeback)."
+                }
+              ]
+            },
+            {
+              "Name": "public.vehicles",
+              "Description": "Catalog of vehicle models offered for sale, with class and manufacturer suggested retail price.",
+              "Fields": [
+                {
+                  "Name": "vehicle_id",
+                  "Alias": "Vehicle ID",
+                  "Description": "Surrogate key for the vehicle model."
+                },
+                {
+                  "Name": "make",
+                  "Alias": "Make",
+                  "Description": "Vehicle manufacturer such as Toyota or Ford."
+                },
+                {
+                  "Name": "model",
+                  "Alias": "Model",
+                  "Description": "Model name such as Camry or F-150."
+                },
+                {
+                  "Name": "vehicle_class",
+                  "Alias": "Vehicle Class",
+                  "Description": "Body class: Sedan, SUV, Truck, EV, or Coupe."
+                },
+                {
+                  "Name": "model_year",
+                  "Alias": "Model Year",
+                  "Description": "Model year of the vehicle."
+                },
+                {
+                  "Name": "msrp",
+                  "Alias": "MSRP",
+                  "Description": "Manufacturer suggested retail price in US dollars."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Id": "manufacturing",
+      "Provider": "PostgreSQL",
+      "Databases": [
+        {
+          "Name": "manufacturing",
+          "DiscoveryMode": "Default",
+          "Tables": [
+            {
+              "Name": "public.dates",
+              "Description": "Calendar date dimension, one row per day, used to filter and group production runs by time.",
+              "Fields": [
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer surrogate key in yyyymmdd form that production runs join to."
+                },
+                {
+                  "Name": "full_date",
+                  "Alias": "Full Date",
+                  "Description": "The actual calendar date."
+                },
+                {
+                  "Name": "year",
+                  "Alias": "Year",
+                  "Description": "Four digit calendar year."
+                },
+                {
+                  "Name": "quarter",
+                  "Alias": "Quarter",
+                  "Description": "Calendar quarter from 1 to 4."
+                },
+                {
+                  "Name": "month",
+                  "Alias": "Month",
+                  "Description": "Calendar month number from 1 to 12."
+                },
+                {
+                  "Name": "month_name",
+                  "Alias": "Month Name",
+                  "Description": "Full month name such as January."
+                },
+                {
+                  "Name": "day_of_month",
+                  "Alias": "Day Of Month",
+                  "Description": "Day number within the month from 1 to 31."
+                },
+                {
+                  "Name": "day_of_week",
+                  "Alias": "Day Of Week",
+                  "Description": "Day of week where 1 is Monday and 7 is Sunday."
+                },
+                {
+                  "Name": "day_name",
+                  "Alias": "Day Name",
+                  "Description": "Full weekday name such as Monday."
+                },
+                {
+                  "Name": "is_weekend",
+                  "Alias": "Is Weekend",
+                  "Description": "True when the day is Saturday or Sunday."
+                },
+                {
+                  "Name": "is_holiday",
+                  "Alias": "Is Holiday",
+                  "Description": "True when the day is a recognized US holiday."
+                }
+              ]
+            },
+            {
+              "Name": "public.plants",
+              "Description": "Manufacturing plants with real coordinates for mapping and rated daily capacity.",
+              "Fields": [
+                {
+                  "Name": "plant_id",
+                  "Alias": "Plant ID",
+                  "Description": "Surrogate key for the plant."
+                },
+                {
+                  "Name": "plant_name",
+                  "Alias": "Plant Name",
+                  "Description": "Display name of the plant."
+                },
+                {
+                  "Name": "plant_type",
+                  "Alias": "Plant Type",
+                  "Description": "Plant type: Assembly, Stamping, Powertrain, or Components."
+                },
+                {
+                  "Name": "city",
+                  "Alias": "City",
+                  "Description": "City the plant is located in."
+                },
+                {
+                  "Name": "state",
+                  "Alias": "State",
+                  "Description": "Two letter US state code for the plant."
+                },
+                {
+                  "Name": "region",
+                  "Alias": "Region",
+                  "Description": "Region the plant rolls up to."
+                },
+                {
+                  "Name": "latitude",
+                  "Alias": "Latitude",
+                  "Description": "Plant latitude for map visualizations."
+                },
+                {
+                  "Name": "longitude",
+                  "Alias": "Longitude",
+                  "Description": "Plant longitude for map visualizations."
+                },
+                {
+                  "Name": "capacity_units_per_day",
+                  "Alias": "Capacity Units Per Day",
+                  "Description": "Rated maximum output of the plant in units per day."
+                },
+                {
+                  "Name": "opened_date",
+                  "Alias": "Opened Date",
+                  "Description": "Date the plant began operations."
+                }
+              ]
+            },
+            {
+              "Name": "public.production_lines",
+              "Description": "Production lines within a plant, each dedicated to a product family with an OEE target.",
+              "Fields": [
+                {
+                  "Name": "line_id",
+                  "Alias": "Line ID",
+                  "Description": "Surrogate key for the production line."
+                },
+                {
+                  "Name": "plant_id",
+                  "Alias": "Plant ID",
+                  "Description": "Plant the line belongs to."
+                },
+                {
+                  "Name": "line_name",
+                  "Alias": "Line Name",
+                  "Description": "Display name of the line such as Line 3."
+                },
+                {
+                  "Name": "product_family",
+                  "Alias": "Product Family",
+                  "Description": "Product family the line produces, such as Engines or Body Panels."
+                },
+                {
+                  "Name": "target_oee",
+                  "Alias": "Target OEE",
+                  "Description": "Target overall equipment effectiveness from 0 to 1."
+                }
+              ]
+            },
+            {
+              "Name": "public.production_runs",
+              "Description": "Per-shift production runs, the core fact for throughput, scrap, downtime, and OEE analysis over time.",
+              "Fields": [
+                {
+                  "Name": "run_id",
+                  "Alias": "Run ID",
+                  "Description": "Surrogate key for the production run."
+                },
+                {
+                  "Name": "line_id",
+                  "Alias": "Line ID",
+                  "Description": "Line that executed the run."
+                },
+                {
+                  "Name": "plant_id",
+                  "Alias": "Plant ID",
+                  "Description": "Plant the run took place at."
+                },
+                {
+                  "Name": "run_date",
+                  "Alias": "Run Date",
+                  "Description": "Date the run was executed."
+                },
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer date key joining to the dates dimension."
+                },
+                {
+                  "Name": "shift",
+                  "Alias": "Shift",
+                  "Description": "Work shift: Day, Swing, or Night."
+                },
+                {
+                  "Name": "units_planned",
+                  "Alias": "Units Planned",
+                  "Description": "Units the run was scheduled to produce."
+                },
+                {
+                  "Name": "units_produced",
+                  "Alias": "Units Produced",
+                  "Description": "Units actually produced during the run."
+                },
+                {
+                  "Name": "units_scrapped",
+                  "Alias": "Units Scrapped",
+                  "Description": "Units produced that were scrapped for quality reasons."
+                },
+                {
+                  "Name": "reject_rate",
+                  "Alias": "Reject Rate",
+                  "Description": "Fraction of produced units scrapped, from 0 to 1."
+                },
+                {
+                  "Name": "downtime_minutes",
+                  "Alias": "Downtime Minutes",
+                  "Description": "Total unplanned downtime during the run in minutes."
+                },
+                {
+                  "Name": "oee",
+                  "Alias": "OEE",
+                  "Description": "Realized overall equipment effectiveness for the run, from 0 to 1."
+                },
+                {
+                  "Name": "scrap_cost",
+                  "Alias": "Scrap Cost",
+                  "Description": "Cost of scrapped units for the run in US dollars."
+                }
+              ]
+            },
+            {
+              "Name": "public.quality_inspections",
+              "Description": "Quality inspections of production runs, recording defect type and counts for Pareto and yield analysis.",
+              "Fields": [
+                {
+                  "Name": "inspection_id",
+                  "Alias": "Inspection ID",
+                  "Description": "Surrogate key for the inspection."
+                },
+                {
+                  "Name": "run_id",
+                  "Alias": "Run ID",
+                  "Description": "Production run that was inspected."
+                },
+                {
+                  "Name": "defect_type",
+                  "Alias": "Defect Type",
+                  "Description": "Primary defect category found, or None when the sample was clean."
+                },
+                {
+                  "Name": "defect_count",
+                  "Alias": "Defect Count",
+                  "Description": "Number of defective units found in the inspected sample."
+                },
+                {
+                  "Name": "inspected_units",
+                  "Alias": "Inspected Units",
+                  "Description": "Number of units inspected in the sample."
+                },
+                {
+                  "Name": "inspection_result",
+                  "Alias": "Inspection Result",
+                  "Description": "Overall inspection result: Pass or Fail."
+                }
+              ]
+            }
+          ]
+        }
       ]
     },
     {
       "Id": "energy",
       "Provider": "PostgreSQL",
       "Databases": [
-        { "Name": "revealaichat", "DiscoveryMode": "Restricted", "Tables": [ { "Name": "public.energy" } ] }
+        {
+          "Name": "energy",
+          "DiscoveryMode": "Default",
+          "Tables": [
+            {
+              "Name": "public.consumption",
+              "Description": "Hourly electricity demand by region and customer sector, the fact for load curves and price analysis.",
+              "Fields": [
+                {
+                  "Name": "consumption_id",
+                  "Alias": "Consumption ID",
+                  "Description": "Surrogate key for the consumption record."
+                },
+                {
+                  "Name": "region",
+                  "Alias": "Region",
+                  "Description": "Demand region: West, South, Midwest, or Northeast."
+                },
+                {
+                  "Name": "sector",
+                  "Alias": "Sector",
+                  "Description": "Customer sector: Residential, Commercial, or Industrial."
+                },
+                {
+                  "Name": "consume_date",
+                  "Alias": "Consume Date",
+                  "Description": "Date of the demand reading."
+                },
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer date key joining to the dates dimension."
+                },
+                {
+                  "Name": "hour_of_day",
+                  "Alias": "Hour Of Day",
+                  "Description": "Hour of the day from 0 to 23 for the load-curve reading."
+                },
+                {
+                  "Name": "demand_mwh",
+                  "Alias": "Demand MWh",
+                  "Description": "Electricity demanded during the hour in megawatt-hours."
+                },
+                {
+                  "Name": "avg_price_per_mwh",
+                  "Alias": "Avg Price Per MWh",
+                  "Description": "Average wholesale price during the hour in US dollars per megawatt-hour."
+                }
+              ]
+            },
+            {
+              "Name": "public.dates",
+              "Description": "Calendar date dimension, one row per day, used to filter and group generation and consumption by time.",
+              "Fields": [
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer surrogate key in yyyymmdd form that generation and consumption join to."
+                },
+                {
+                  "Name": "full_date",
+                  "Alias": "Full Date",
+                  "Description": "The actual calendar date."
+                },
+                {
+                  "Name": "year",
+                  "Alias": "Year",
+                  "Description": "Four digit calendar year."
+                },
+                {
+                  "Name": "quarter",
+                  "Alias": "Quarter",
+                  "Description": "Calendar quarter from 1 to 4."
+                },
+                {
+                  "Name": "month",
+                  "Alias": "Month",
+                  "Description": "Calendar month number from 1 to 12."
+                },
+                {
+                  "Name": "month_name",
+                  "Alias": "Month Name",
+                  "Description": "Full month name such as January."
+                },
+                {
+                  "Name": "day_of_month",
+                  "Alias": "Day Of Month",
+                  "Description": "Day number within the month from 1 to 31."
+                },
+                {
+                  "Name": "day_of_week",
+                  "Alias": "Day Of Week",
+                  "Description": "Day of week where 1 is Monday and 7 is Sunday."
+                },
+                {
+                  "Name": "day_name",
+                  "Alias": "Day Name",
+                  "Description": "Full weekday name such as Monday."
+                },
+                {
+                  "Name": "is_weekend",
+                  "Alias": "Is Weekend",
+                  "Description": "True when the day is Saturday or Sunday."
+                },
+                {
+                  "Name": "is_holiday",
+                  "Alias": "Is Holiday",
+                  "Description": "True when the day is a recognized US holiday."
+                }
+              ]
+            },
+            {
+              "Name": "public.generation",
+              "Description": "Daily electricity generated by each plant, the fact for generation-mix, capacity-factor, emissions, and outage analysis.",
+              "Fields": [
+                {
+                  "Name": "generation_id",
+                  "Alias": "Generation ID",
+                  "Description": "Surrogate key for the generation record."
+                },
+                {
+                  "Name": "plant_id",
+                  "Alias": "Plant ID",
+                  "Description": "Plant that produced the energy."
+                },
+                {
+                  "Name": "gen_date",
+                  "Alias": "Gen Date",
+                  "Description": "Date the energy was generated."
+                },
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer date key joining to the dates dimension."
+                },
+                {
+                  "Name": "energy_mwh",
+                  "Alias": "Energy MWh",
+                  "Description": "Total energy generated that day in megawatt-hours."
+                },
+                {
+                  "Name": "capacity_factor",
+                  "Alias": "Capacity Factor",
+                  "Description": "Realized output as a fraction of nameplate capacity, from 0 to 1."
+                },
+                {
+                  "Name": "fuel_cost_per_mwh",
+                  "Alias": "Fuel Cost Per MWh",
+                  "Description": "Variable fuel and operating cost per megawatt-hour in US dollars."
+                },
+                {
+                  "Name": "co2_tons",
+                  "Alias": "CO2 Tons",
+                  "Description": "Carbon dioxide emitted that day in metric tons; zero for carbon-free sources."
+                },
+                {
+                  "Name": "is_outage",
+                  "Alias": "Is Outage",
+                  "Description": "True when the plant suffered an unplanned outage that day, cutting output."
+                }
+              ]
+            },
+            {
+              "Name": "public.power_plants",
+              "Description": "Electricity generating stations with real coordinates for mapping, a fuel type, and nameplate capacity.",
+              "Fields": [
+                {
+                  "Name": "plant_id",
+                  "Alias": "Plant ID",
+                  "Description": "Surrogate key for the plant."
+                },
+                {
+                  "Name": "plant_name",
+                  "Alias": "Plant Name",
+                  "Description": "Display name of the plant."
+                },
+                {
+                  "Name": "fuel_type",
+                  "Alias": "Fuel Type",
+                  "Description": "Generation fuel: Nuclear, Natural Gas, Coal, Hydro, Wind, or Solar."
+                },
+                {
+                  "Name": "city",
+                  "Alias": "City",
+                  "Description": "City the plant is located in."
+                },
+                {
+                  "Name": "state",
+                  "Alias": "State",
+                  "Description": "Two letter US state code for the plant."
+                },
+                {
+                  "Name": "region",
+                  "Alias": "Region",
+                  "Description": "Region the plant rolls up to."
+                },
+                {
+                  "Name": "latitude",
+                  "Alias": "Latitude",
+                  "Description": "Plant latitude for map visualizations."
+                },
+                {
+                  "Name": "longitude",
+                  "Alias": "Longitude",
+                  "Description": "Plant longitude for map visualizations."
+                },
+                {
+                  "Name": "capacity_mw",
+                  "Alias": "Capacity MW",
+                  "Description": "Nameplate generating capacity in megawatts."
+                },
+                {
+                  "Name": "commissioned_date",
+                  "Alias": "Commissioned Date",
+                  "Description": "Date the plant entered service."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Id": "telecom",
+      "Provider": "PostgreSQL",
+      "Databases": [
+        {
+          "Name": "telecom",
+          "DiscoveryMode": "Default",
+          "Tables": [
+            {
+              "Name": "public.dates",
+              "Description": "Calendar date dimension, one row per day, used to filter and group usage and network metrics by time.",
+              "Fields": [
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer surrogate key in yyyymmdd form that usage and network metrics join to."
+                },
+                {
+                  "Name": "full_date",
+                  "Alias": "Full Date",
+                  "Description": "The actual calendar date."
+                },
+                {
+                  "Name": "year",
+                  "Alias": "Year",
+                  "Description": "Four digit calendar year."
+                },
+                {
+                  "Name": "quarter",
+                  "Alias": "Quarter",
+                  "Description": "Calendar quarter from 1 to 4."
+                },
+                {
+                  "Name": "month",
+                  "Alias": "Month",
+                  "Description": "Calendar month number from 1 to 12."
+                },
+                {
+                  "Name": "month_name",
+                  "Alias": "Month Name",
+                  "Description": "Full month name such as January."
+                },
+                {
+                  "Name": "day_of_month",
+                  "Alias": "Day Of Month",
+                  "Description": "Day number within the month from 1 to 31."
+                },
+                {
+                  "Name": "day_of_week",
+                  "Alias": "Day Of Week",
+                  "Description": "Day of week where 1 is Monday and 7 is Sunday."
+                },
+                {
+                  "Name": "day_name",
+                  "Alias": "Day Name",
+                  "Description": "Full weekday name such as Monday."
+                },
+                {
+                  "Name": "is_weekend",
+                  "Alias": "Is Weekend",
+                  "Description": "True when the day is Saturday or Sunday."
+                },
+                {
+                  "Name": "is_holiday",
+                  "Alias": "Is Holiday",
+                  "Description": "True when the day is a recognized US holiday."
+                }
+              ]
+            },
+            {
+              "Name": "public.network_metrics",
+              "Description": "Daily health metrics per tower, the fact for uptime, latency, dropped-call, and traffic analysis over time.",
+              "Fields": [
+                {
+                  "Name": "metric_id",
+                  "Alias": "Metric ID",
+                  "Description": "Surrogate key for the metric record."
+                },
+                {
+                  "Name": "tower_id",
+                  "Alias": "Tower ID",
+                  "Description": "Tower the metrics were recorded for."
+                },
+                {
+                  "Name": "metric_date",
+                  "Alias": "Metric Date",
+                  "Description": "Date the metrics were recorded."
+                },
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer date key joining to the dates dimension."
+                },
+                {
+                  "Name": "uptime_pct",
+                  "Alias": "Uptime %",
+                  "Description": "Percentage of the day the tower was in service, from 0 to 100."
+                },
+                {
+                  "Name": "avg_latency_ms",
+                  "Alias": "Avg Latency ms",
+                  "Description": "Average round-trip network latency for the day in milliseconds."
+                },
+                {
+                  "Name": "dropped_call_rate",
+                  "Alias": "Dropped Call Rate",
+                  "Description": "Fraction of calls dropped during the day, from 0 to 1."
+                },
+                {
+                  "Name": "data_traffic_gb",
+                  "Alias": "Data Traffic GB",
+                  "Description": "Total data carried by the tower during the day in gigabytes."
+                },
+                {
+                  "Name": "is_outage",
+                  "Alias": "Is Outage",
+                  "Description": "True when the tower experienced an outage that day, depressing uptime."
+                }
+              ]
+            },
+            {
+              "Name": "public.plans",
+              "Description": "Catalog of rate plans subscribers can be on, with price and included data allowance.",
+              "Fields": [
+                {
+                  "Name": "plan_id",
+                  "Alias": "Plan ID",
+                  "Description": "Surrogate key for the plan."
+                },
+                {
+                  "Name": "plan_name",
+                  "Alias": "Plan Name",
+                  "Description": "Display name of the plan such as Unlimited Plus."
+                },
+                {
+                  "Name": "plan_type",
+                  "Alias": "Plan Type",
+                  "Description": "Plan type: Prepaid or Postpaid."
+                },
+                {
+                  "Name": "monthly_price",
+                  "Alias": "Monthly Price",
+                  "Description": "Recurring monthly price of the plan in US dollars."
+                },
+                {
+                  "Name": "data_allowance_gb",
+                  "Alias": "Data Allowance GB",
+                  "Description": "Included monthly data allowance in gigabytes; a nominal cap when the plan is unlimited."
+                },
+                {
+                  "Name": "is_unlimited",
+                  "Alias": "Is Unlimited",
+                  "Description": "True when the plan offers unlimited data with no overage."
+                }
+              ]
+            },
+            {
+              "Name": "public.subscribers",
+              "Description": "Mobile subscribers with their plan, location, tenure, revenue, and modeled churn risk.",
+              "Fields": [
+                {
+                  "Name": "subscriber_id",
+                  "Alias": "Subscriber ID",
+                  "Description": "Surrogate key for the subscriber."
+                },
+                {
+                  "Name": "first_name",
+                  "Alias": "First Name",
+                  "Description": "Subscriber first name."
+                },
+                {
+                  "Name": "last_name",
+                  "Alias": "Last Name",
+                  "Description": "Subscriber last name."
+                },
+                {
+                  "Name": "plan_id",
+                  "Alias": "Plan ID",
+                  "Description": "Rate plan the subscriber is on."
+                },
+                {
+                  "Name": "city",
+                  "Alias": "City",
+                  "Description": "Subscriber city."
+                },
+                {
+                  "Name": "state",
+                  "Alias": "State",
+                  "Description": "Two letter US state code for the subscriber."
+                },
+                {
+                  "Name": "region",
+                  "Alias": "Region",
+                  "Description": "Region the subscriber rolls up to."
+                },
+                {
+                  "Name": "latitude",
+                  "Alias": "Latitude",
+                  "Description": "Subscriber latitude for map visualizations."
+                },
+                {
+                  "Name": "longitude",
+                  "Alias": "Longitude",
+                  "Description": "Subscriber longitude for map visualizations."
+                },
+                {
+                  "Name": "status",
+                  "Alias": "Status",
+                  "Description": "Subscriber status: Active, Suspended, or Churned."
+                },
+                {
+                  "Name": "tenure_months",
+                  "Alias": "Tenure Months",
+                  "Description": "Number of months the subscriber has been with the carrier."
+                },
+                {
+                  "Name": "arpu",
+                  "Alias": "ARPU",
+                  "Description": "Average revenue per user per month in US dollars."
+                },
+                {
+                  "Name": "churn_risk",
+                  "Alias": "Churn Risk",
+                  "Description": "Modeled probability from 0 to 1 that the subscriber churns."
+                },
+                {
+                  "Name": "signup_date",
+                  "Alias": "Signup Date",
+                  "Description": "Date the subscriber joined the carrier."
+                }
+              ]
+            },
+            {
+              "Name": "public.towers",
+              "Description": "Cell tower sites with real coordinates for mapping, radio technology, and backhaul capacity.",
+              "Fields": [
+                {
+                  "Name": "tower_id",
+                  "Alias": "Tower ID",
+                  "Description": "Surrogate key for the tower."
+                },
+                {
+                  "Name": "site_code",
+                  "Alias": "Site Code",
+                  "Description": "Operational site code identifying the tower."
+                },
+                {
+                  "Name": "technology",
+                  "Alias": "Technology",
+                  "Description": "Radio technology served: 4G LTE or 5G."
+                },
+                {
+                  "Name": "city",
+                  "Alias": "City",
+                  "Description": "City the tower is located in."
+                },
+                {
+                  "Name": "state",
+                  "Alias": "State",
+                  "Description": "Two letter US state code for the tower."
+                },
+                {
+                  "Name": "region",
+                  "Alias": "Region",
+                  "Description": "Region the tower rolls up to."
+                },
+                {
+                  "Name": "latitude",
+                  "Alias": "Latitude",
+                  "Description": "Tower latitude for map visualizations."
+                },
+                {
+                  "Name": "longitude",
+                  "Alias": "Longitude",
+                  "Description": "Tower longitude for map visualizations."
+                },
+                {
+                  "Name": "backhaul_capacity_mbps",
+                  "Alias": "Backhaul Capacity Mbps",
+                  "Description": "Backhaul link capacity for the tower in megabits per second."
+                },
+                {
+                  "Name": "status",
+                  "Alias": "Status",
+                  "Description": "Operational status of the tower: Active or Maintenance."
+                },
+                {
+                  "Name": "install_date",
+                  "Alias": "Install Date",
+                  "Description": "Date the tower was installed."
+                }
+              ]
+            },
+            {
+              "Name": "public.usage",
+              "Description": "Monthly usage and billing per subscriber, the fact for data growth, ARPU, and overage analysis.",
+              "Fields": [
+                {
+                  "Name": "usage_id",
+                  "Alias": "Usage ID",
+                  "Description": "Surrogate key for the usage record."
+                },
+                {
+                  "Name": "subscriber_id",
+                  "Alias": "Subscriber ID",
+                  "Description": "Subscriber the usage belongs to."
+                },
+                {
+                  "Name": "usage_month",
+                  "Alias": "Usage Month",
+                  "Description": "First day of the billing month the usage covers."
+                },
+                {
+                  "Name": "date_key",
+                  "Alias": "Date Key",
+                  "Description": "Integer date key for the billing month joining to the dates dimension."
+                },
+                {
+                  "Name": "data_gb",
+                  "Alias": "Data GB",
+                  "Description": "Mobile data consumed during the month in gigabytes."
+                },
+                {
+                  "Name": "voice_minutes",
+                  "Alias": "Voice Minutes",
+                  "Description": "Voice minutes used during the month."
+                },
+                {
+                  "Name": "sms_count",
+                  "Alias": "SMS Count",
+                  "Description": "Number of text messages sent during the month."
+                },
+                {
+                  "Name": "overage_charge",
+                  "Alias": "Overage Charge",
+                  "Description": "Overage charges billed for exceeding the plan allowance in US dollars."
+                },
+                {
+                  "Name": "bill_amount",
+                  "Alias": "Bill Amount",
+                  "Description": "Total billed amount for the month in US dollars, plan price plus overage."
+                }
+              ]
+            }
+          ]
+        }
       ]
     }
   ]

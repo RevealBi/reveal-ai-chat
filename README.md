@@ -1,8 +1,8 @@
 # Reveal AI Chat
 
 A sample app that turns plain-English questions into Reveal dashboards — React client, ASP.NET
-host, and a PostgreSQL database in Docker, with five ready-made datasets (Retail, Automotive,
-Manufacturing, Healthcare, Energy).
+host, and a PostgreSQL database in Docker, with seven ready-made datasets (Retail, Finance,
+Healthcare, Automotive, Manufacturing, Energy, Telecom).
 
 To run it you need an **AI provider key** (OpenAI, Anthropic, or Azure OpenAI) and a **Reveal SDK
 license** — the app collects both in a first-run dialog, so there's nothing to put in a file.
@@ -12,23 +12,32 @@ license** — the app collects both in a first-run dialog, so there's nothing to
 | **[Run it (Docker)](#run-it-docker)** | trying it · demos | Docker Desktop |
 | **[Run from source](#run-from-source)** | editing · debugging | .NET 8 SDK + Node 18+ + Docker |
 
+**The database is identical in both** — the same prebuilt `brianlagunas/reveal-samples-db` image
+with the same seven datasets and data. The only difference is how it's reached: the Docker app runs
+it inside its own Compose network, while "Run from source" publishes it on `localhost:5432` so a
+locally-debugged server can connect. **Pick one mode at a time;** the two are separate Compose
+projects, so if you switch, stop the other first (`docker compose -f <the-other-file> down`).
+
 ---
 
 ## Run it (Docker)
 
-Docker is the only prerequisite. From the repo root:
+Self-contained: this one command starts **both** the database and the app in containers — you don't
+run anything else, and you don't need .NET, Node, or a local database. Docker is the only
+prerequisite. From the repo root:
 
 ```bash
 docker compose -f docker-compose.app.yml up --build
 ```
 
-The images aren't published anywhere, so Compose builds the app from source on the first run (a few
-minutes, plus a one-time database seed); after that it starts in seconds. Then:
+The app image isn't published anywhere, so Compose builds it from source on the first run (a few
+minutes); the database is the prebuilt `brianlagunas/reveal-samples-db` image, pulled ready-to-use.
+After the first run it all starts in seconds. Then:
 
 1. Open **<http://localhost:8111>** — a setup dialog appears.
 2. Pick your **AI provider** (OpenAI, Anthropic, or Azure OpenAI), enter its **API key** and your
    **Reveal SDK license**, then **Save** — the app applies them and restarts once (a few seconds).
-3. Ask a question, e.g. *"Show total profit by region."*
+3. Ask a question, e.g. *"Show total revenue by state on a map."*
 
 Keys are saved encrypted in a Docker volume, so you only enter them once. Change dataset (top-left)
 or model/key (the **gear** icon) anytime.
@@ -49,11 +58,18 @@ dev server), and the **server** (ASP.NET, where you debug). Start each once, in 
 [Node 18+](https://nodejs.org) ·
 [Docker Desktop](https://www.docker.com/products/docker-desktop/) (running).
 
-**1 — Database** (Postgres in Docker; seeds ~22k rows on first run, instant after):
+**1 — Database** (the prebuilt `brianlagunas/reveal-samples-db` Postgres image — seven sample
+databases with the data baked in). Same image as the Docker app, but published on `localhost:5432`
+so the server you debug can reach it. The first `up` pulls it from Docker Hub; there's nothing to
+build or seed, so it's ready in seconds:
 
 ```bash
 docker compose -f docker-compose.db.yml up -d
 ```
+
+> If you previously ran the full Docker app, stop it first so you're not running two stacks:
+> `docker compose -f docker-compose.app.yml down`. The server **won't start without this database**
+> — it connects to `localhost:5432` on boot to build its AI metadata.
 
 **2 — Server** (ASP.NET API on **:7654**, with the debugger). Pick one:
 
@@ -101,8 +117,10 @@ you'll usually only need the AI provider key.
   on :5173 with no server restart. It connects to the server at the URL in
   `client/src/lib/serverUrl.ts` (default :7654 — must match the server's `applicationUrl`). Override
   it with `VITE_SERVER_URL` (e.g. for the coming Node/Java hosts) without editing the file.
-- **Database** — connect any SQL client to `localhost:5432` (db `revealaichat`, user `reveal`,
-  password `reveal_ai_chat`). Wipe + reseed with `docker compose -f docker-compose.db.yml down -v`.
+- **Database** — connect any SQL client to `localhost:5432` (user `reveal`, password `reveal`). Each
+  vertical is its own database: `retail`, `finance`, `healthcare`, `automotive`, `manufacturing`,
+  `energy`, `telecom`. The data is baked into the image, so a fresh container is always fully
+  populated — `docker compose -f docker-compose.db.yml down && up -d` gives you a clean reset.
 - **AI metadata** — the tables the AI may use are listed in `Reveal/Metadata/catalog.json`. The
   SDK caches generated metadata per datasource under `%LOCALAPPDATA%/reveal/ai/metadata`; delete
   that folder to force a clean regenerate. Regenerate at runtime with
@@ -115,7 +133,7 @@ you'll usually only need the AI provider key.
 In **development** the three parts run side by side and stay decoupled:
 
 ```
-client/ (Vite dev, :5173)  ──cross-origin──▶  server/aspnet (ASP.NET, :7654)  ──▶  Postgres (db/, Docker)
+client/ (Vite dev, :5173)  ──cross-origin──▶  server/aspnet (ASP.NET, :7654)  ──▶  Postgres (Docker)
    the UI, hot-reloaded                         Reveal / Reveal AI APIs              docker-compose.db.yml
 ```
 
@@ -130,13 +148,17 @@ client/ (Vite dev, :5173)  ──cross-origin──▶  server/aspnet (ASP.NET, 
 
 ## Changing the data
 
-Seed scripts in `db/seed/*.sql` are generated from the Excel files in `db/source/*.xlsx`:
+The sample data ships as a prebuilt image (`brianlagunas/reveal-samples-db`) — seven Postgres
+databases with the rows, table/column comments, and city coordinates baked in. There's no seed step
+in this repo; both compose files just pull and run that image.
 
-```bash
-cd db
-npm install && npm run gen                           # source/*.xlsx -> seed/*.sql
-docker compose -f ../docker-compose.db.yml down -v      # wipe the dev volume
-docker compose -f ../docker-compose.db.yml up -d        # reseed on next boot
-```
+To point the sample at **your own** data instead, you don't touch the database at all — change two
+things in the server:
 
-(After changing the seed, rebuild the Docker images so `docker-compose.app.yml` picks it up.)
+- `server/aspnet/RevealAIChat.Server/Reveal/Metadata/catalog.json` — the datasources, databases, and
+  tables the AI is allowed to use.
+- `server/aspnet/RevealAIChat.Server/Reveal/DataSourceProvider.cs` + `AuthenticationProvider.cs` —
+  where Reveal connects and authenticates (swap in SQL Server, Snowflake, BigQuery, a REST API, …).
+
+Then update the verticals shown in the UI in `client/src/lib/verticals.ts` (label, tagline, and the
+`datasourceId`, which must match a datasource `Id` in `catalog.json`).

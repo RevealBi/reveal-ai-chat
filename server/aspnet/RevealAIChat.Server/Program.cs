@@ -136,7 +136,7 @@ do
     if (app.Environment.IsDevelopment())
     {
         // The Postgres container is started separately (see README "Run from source"):
-        //   docker compose -f docker-compose.db.yml up -d   (seeds on first run)
+        //   docker compose -f docker-compose.db.yml up -d   (prebuilt image, no seeding)
         app.UseSwagger();
         app.UseSwaggerUI();
         app.UseCors("Dev");

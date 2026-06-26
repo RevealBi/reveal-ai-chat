@@ -1,6 +1,0 @@
-node_modules
-source
-*.mjs
-package.json
-package-lock.json
-.gitignore
