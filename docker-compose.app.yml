@@ -26,7 +26,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: revealbi/reveal-ai-chat-sample:latest
+    image: brianlagunas/reveal-ai-chat:latest
     restart: unless-stopped          # crash resilience only; the post-setup restart now happens in-process
     environment:
       ASPNETCORE_URLS: http://+:8111   # app listens on 8111 (matches the published port below)

@@ -162,3 +162,42 @@ things in the server:
 
 Then update the verticals shown in the UI in `client/src/lib/verticals.ts` (label, tagline, and the
 `datasourceId`, which must match a datasource `Id` in `catalog.json`).
+
+## Publishing to Docker Hub
+
+> Maintainers only. The app image is `brianlagunas/reveal-ai-chat`, built from the root `Dockerfile`,
+> which bundles the React client into the ASP.NET server — so the published image is the whole app
+> in one container. (The sample database is a separate image, `brianlagunas/reveal-samples-db`,
+> maintained in its own repo; it isn't built or pushed from here.) No keys or licenses are baked in
+> — they're always supplied at runtime via the first-run dialog or env vars.
+
+1. Sign in to Docker Hub (you need push access to the `brianlagunas` namespace):
+
+   ```bash
+   docker login
+   ```
+
+2. From the repo root (where the `Dockerfile` lives), build and tag the image with the new release
+   version **and** `latest`:
+
+   ```bash
+   docker build -t brianlagunas/reveal-ai-chat:1.0.0 -t brianlagunas/reveal-ai-chat:latest .
+   ```
+
+3. Push both tags:
+
+   ```bash
+   docker push brianlagunas/reveal-ai-chat:1.0.0
+   docker push brianlagunas/reveal-ai-chat:latest
+   ```
+
+Bump the version (`1.0.0` → `1.0.1`, …) for each release and keep `latest` pointing at the newest.
+The `image:` in `docker-compose.app.yml` must match this name so end users pull the image you push.
+
+To build for both Intel and Apple-silicon hosts in one shot, use `buildx` instead of steps 2–3
+(`--push` uploads straight from the build, so no separate `docker push` is needed):
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t brianlagunas/reveal-ai-chat:1.0.0 -t brianlagunas/reveal-ai-chat:latest --push .
+```
