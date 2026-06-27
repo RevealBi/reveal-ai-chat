@@ -9,38 +9,53 @@ license** — the app collects both in a first-run dialog, so there's nothing to
 
 | | For | Needs |
 | --- | --- | --- |
-| **[Run it (Docker)](#run-it-docker)** | trying it · demos | Docker Desktop |
+| **[Quick start (Docker)](#quick-start-docker)** | trying it · demos | Docker Desktop + this repo |
+| **[Build from source (Docker)](#build-from-source-docker)** | running your own edits | Docker Desktop + this repo |
 | **[Run from source](#run-from-source)** | editing · debugging | .NET 8 SDK + Node 18+ + Docker |
 
-**The database is identical in both** — the same prebuilt `brianlagunas/reveal-samples-db` image
-with the same seven datasets and data. The only difference is how it's reached: the Docker app runs
-it inside its own Compose network, while "Run from source" publishes it on `localhost:5432` so a
-locally-debugged server can connect. **Pick one mode at a time;** the two are separate Compose
-projects, so if you switch, stop the other first (`docker compose -f <the-other-file> down`).
+Every mode runs the **same two images** as separate containers — the app and the prebuilt
+`brianlagunas/reveal-samples-db` database. Quick start *pulls* the published app image; *Build from
+source* *builds* it from this repo; *Run from source* runs the server and client on your machine
+against the database container. The data is identical in all three.
 
 ---
 
-## Run it (Docker)
+## Quick start (Docker)
 
-Self-contained: this one command starts **both** the database and the app in containers — you don't
-run anything else, and you don't need .NET, Node, or a local database. Docker is the only
-prerequisite. From the repo root:
+The fastest way to try it — no build, no .NET/Node, just Docker and this repo. Clone the repo, then
+from its root start the published images with Compose:
+
+```bash
+docker compose -f docker-compose-image-tag.yml up
+```
+
+Compose pulls the app and database images from Docker Hub and starts them together. Then:
+
+1. Open **<http://localhost:8111>** — a setup dialog appears.
+2. Pick your **AI provider** (OpenAI, Anthropic, or Azure OpenAI), enter its **API key** and your
+   **Reveal SDK license**, then **Save** — the app applies them and restarts once (a few seconds).
+3. Ask a question, e.g. *"Show monthly sales revenue over the last two years."*
+
+Keys are saved encrypted in a Docker volume, so you only enter them once. Change dataset (top-left)
+or model/key (the **gear** icon) anytime.
+
+```bash
+docker compose -f docker-compose-image-tag.yml down       # stop — keeps your saved keys
+docker compose -f docker-compose-image-tag.yml down -v    # stop + wipe everything
+```
+
+---
+
+## Build from source (Docker)
+
+The same two-container app, but Compose **builds the app image from this repo** instead of pulling it
+— use this when you've edited the code. From the repo root:
 
 ```bash
 docker compose -f docker-compose.app.yml up --build
 ```
 
-The app image isn't published anywhere, so Compose builds it from source on the first run (a few
-minutes); the database is the prebuilt `brianlagunas/reveal-samples-db` image, pulled ready-to-use.
-After the first run it all starts in seconds. Then:
-
-1. Open **<http://localhost:8111>** — a setup dialog appears.
-2. Pick your **AI provider** (OpenAI, Anthropic, or Azure OpenAI), enter its **API key** and your
-   **Reveal SDK license**, then **Save** — the app applies them and restarts once (a few seconds).
-3. Ask a question, e.g. *"Show total revenue by state on a map."*
-
-Keys are saved encrypted in a Docker volume, so you only enter them once. Change dataset (top-left)
-or model/key (the **gear** icon) anytime.
+Open **<http://localhost:8111>** and complete the same setup dialog as above.
 
 ```bash
 docker compose -f docker-compose.app.yml down       # stop — keeps keys + data
@@ -165,11 +180,11 @@ Then update the verticals shown in the UI in `client/src/lib/verticals.ts` (labe
 
 ## Publishing to Docker Hub
 
-> Maintainers only. The app image is `brianlagunas/reveal-ai-chat`, built from the root `Dockerfile`,
-> which bundles the React client into the ASP.NET server — so the published image is the whole app
-> in one container. (The sample database is a separate image, `brianlagunas/reveal-samples-db`,
-> maintained in its own repo; it isn't built or pushed from here.) No keys or licenses are baked in
-> — they're always supplied at runtime via the first-run dialog or env vars.
+> Maintainers only. This publishes the **app** image `brianlagunas/reveal-ai-chat`, built from the
+> root `Dockerfile` (the React client bundled into the ASP.NET server). It's what the quick-start
+> `docker-compose-image-tag.yml` pulls. The sample **database** image (`brianlagunas/reveal-samples-db`)
+> is maintained in its own repo and isn't built or pushed from here. No keys or licenses are baked in
+> — they're always supplied at runtime via the first-run dialog.
 
 1. Sign in to Docker Hub (you need push access to the `brianlagunas` namespace):
 
@@ -177,8 +192,7 @@ Then update the verticals shown in the UI in `client/src/lib/verticals.ts` (labe
    docker login
    ```
 
-2. From the repo root (where the `Dockerfile` lives), build and tag the image with the new release
-   version **and** `latest`:
+2. From the repo root, build the app image and tag it with the new release version **and** `latest`:
 
    ```bash
    docker build -t brianlagunas/reveal-ai-chat:1.0.0 -t brianlagunas/reveal-ai-chat:latest .
@@ -192,7 +206,7 @@ Then update the verticals shown in the UI in `client/src/lib/verticals.ts` (labe
    ```
 
 Bump the version (`1.0.0` → `1.0.1`, …) for each release and keep `latest` pointing at the newest.
-The `image:` in `docker-compose.app.yml` must match this name so end users pull the image you push.
+For a reproducible quick start, pin that release tag in `docker-compose-image-tag.yml`.
 
 To build for both Intel and Apple-silicon hosts in one shot, use `buildx` instead of steps 2–3
 (`--push` uploads straight from the build, so no separate `docker push` is needed):

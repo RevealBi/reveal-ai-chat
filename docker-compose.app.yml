@@ -1,8 +1,9 @@
-# Full app — no .NET / Node / source needed, just Docker. On first run the app shows a
-# Settings dialog in the browser to collect your Reveal license + LLM provider/model/key;
-# they're saved encrypted in a volume, so you only do it once.
+# Full app, BUILT FROM SOURCE — for running your own edits. Builds the app image from this repo
+# and runs it next to the sample database. To run the PUBLISHED image instead (no build), use
+# docker-compose-image-tag.yml. On first run the app shows a Settings dialog in the browser to
+# collect your Reveal license + LLM provider/model/key; they're saved encrypted in a volume.
 #
-#   docker compose -f docker-compose.app.yml up --build     # builds the app from source (not published anywhere), then starts
+#   docker compose -f docker-compose.app.yml up --build     # build from source, then start
 #
 # Then open http://localhost:8111 and fill in the dialog.
 
@@ -26,7 +27,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: brianlagunas/reveal-ai-chat:latest
+    image: brianlagunas/reveal-ai-chat:latest   # the image this build produces (and what gets published)
     restart: unless-stopped          # crash resilience only; the post-setup restart now happens in-process
     environment:
       ASPNETCORE_URLS: http://+:8111   # app listens on 8111 (matches the published port below)

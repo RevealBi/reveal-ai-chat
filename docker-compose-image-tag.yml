@@ -1,0 +1,42 @@
+# Quick start — runs the PUBLISHED images from Docker Hub (no build). Clone the repo and run:
+#
+#   docker compose -f docker-compose-image-tag.yml up
+#
+# Then open http://localhost:8111 and fill in the first-run dialog (Reveal license + LLM key).
+# Use docker-compose.app.yml instead if you want to build the app from your own source edits.
+
+name: reveal-ai-chat
+
+services:
+  db:
+    # Prebuilt sample database: seven databases (retail, finance, healthcare, automotive,
+    # manufacturing, energy, telecom) with the data baked into the image — nothing to seed.
+    # Internal to the Compose network (the app reaches it as host "db"); not published to localhost.
+    image: brianlagunas/reveal-samples-db:1.0.0
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reveal -d retail"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  app:
+    # Published app image — pin a release tag (e.g. :1.0.0) for a reproducible quick start.
+    image: brianlagunas/reveal-ai-chat:latest
+    restart: unless-stopped          # crash resilience only; the post-setup restart happens in-process
+    environment:
+      ASPNETCORE_URLS: http://+:8111
+      Database__Host: db
+      Database__Port: "5432"
+      Database__User: reveal
+      Database__Password: reveal       # per-vertical database name comes from Reveal/Metadata/catalog.json
+      Setup__ConfigDir: /config        # encrypted keys (entered in the first-run dialog) + Data Protection key-ring
+    volumes:
+      - reveal-ai-chat-config:/config
+    ports:
+      - "8111:8111"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  reveal-ai-chat-config:
