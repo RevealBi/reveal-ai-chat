@@ -1,5 +1,15 @@
-import { useState, type FormEvent } from 'react';
-import { KeyRound, ExternalLink, Loader2, AlertCircle, X, Sparkles, Lock } from 'lucide-react';
+import { useState, type CSSProperties, type FormEvent } from 'react';
+import {
+  IgrBanner,
+  IgrButton,
+  IgrCard,
+  IgrCircularProgress,
+  IgrDialog,
+  IgrInput,
+  IgrSelect,
+  IgrSelectItem,
+  IgrTextarea,
+} from 'igniteui-react';
 import {
   PROVIDERS,
   PROVIDER_IDS,
@@ -8,9 +18,9 @@ import {
   type SetupStatus,
   type ProviderId,
 } from '../lib/setup';
+import { AppIcon, AppIconButton } from './AppIcon';
 
-const FIELD =
-  'mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-200';
+const SPINNER_16 = { '--diameter': '16px' } as CSSProperties;
 
 /**
  * One setup dialog: the Reveal license (only when not already provided) plus the AI provider,
@@ -87,140 +97,147 @@ export function SetupDialog({
 
   if (starting) return <StartingScreen restarting={dismissable} />;
 
-  const card = (
-    <form onSubmit={submit} className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-7 shadow-xl">
+  const form = (
+    <form onSubmit={submit} className="setup-form relative flex flex-col gap-4">
       {dismissable && (
-        <button type="button" onClick={onClose} aria-label="Close" className="absolute right-4 top-4 text-slate-400 hover:text-slate-600">
-          <X className="h-5 w-5" />
-        </button>
+        <AppIconButton name="x" aria-label="Close" onClick={onClose} className="absolute -right-2 -top-2" />
       )}
 
-      <div className="flex items-center gap-2.5">
-        <div className="grid h-9 w-9 place-items-center rounded-lg bg-violet-600 text-sm font-bold text-white">R</div>
-        <div className="text-sm font-semibold text-slate-500">Reveal AI Chat</div>
+      <div>
+        <div className="flex items-center gap-2.5">
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-violet-600 text-sm font-bold text-white">R</div>
+          <div className="text-sm font-semibold text-slate-500">Reveal AI Chat</div>
+        </div>
+        <h1 className="mt-5 flex items-center gap-2 text-xl font-semibold text-slate-900">
+          <AppIcon name="sparkles" size={20} className="text-violet-600" /> {dismissable ? 'AI settings' : 'Get set up'}
+        </h1>
+        <p className="mt-1.5 text-sm text-slate-500">
+          {status.licenseNeeded
+            ? 'Add your Reveal license and choose an AI provider. Saved encrypted on this machine; the app restarts once to apply.'
+            : 'Choose an AI provider and add your key. The app restarts once to apply.'}
+        </p>
       </div>
 
-      <h1 className="mt-5 flex items-center gap-2 text-xl font-semibold text-slate-900">
-        <Sparkles className="h-5 w-5 text-violet-600" /> {dismissable ? 'AI settings' : 'Get set up'}
-      </h1>
-      <p className="mt-1.5 text-sm text-slate-500">
-        {status.licenseNeeded
-          ? 'Add your Reveal license and choose an AI provider. Saved encrypted on this machine; the app restarts once to apply.'
-          : 'Choose an AI provider and add your key. The app restarts once to apply.'}
-      </p>
-
       {error && (
-        <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{error}</span>
-        </div>
+        <IgrBanner open onClosed={() => setError(null)}>
+          <AppIcon slot="prefix" name="circle-alert" size={18} className="text-red-600" />
+          {error}
+        </IgrBanner>
       )}
 
       {status.licenseNeeded && (
-        <label className="mt-5 block">
-          <span className="text-sm font-medium text-slate-700">Reveal SDK license</span>
-          <textarea
-            value={license}
-            onChange={(e) => setLicense(e.target.value)}
-            rows={3}
-            placeholder="Paste your Reveal license key"
-            className={FIELD + ' resize-none font-mono text-xs'}
-          />
-        </label>
+        <IgrTextarea
+          label="Reveal SDK license"
+          value={license}
+          rows={3}
+          resize="none"
+          placeholder="Paste your Reveal license key"
+          className="font-mono"
+          onInput={(e) => setLicense(e.detail)}
+        />
       )}
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <label className="block">
-          <span className="text-sm font-medium text-slate-700">AI provider</span>
-          <select value={provider} onChange={(e) => onProvider(e.target.value as ProviderId)} className={FIELD + ' bg-white'}>
-            {PROVIDER_IDS.map((id) => (
-              <option key={id} value={id}>{PROVIDERS[id].label}</option>
-            ))}
-          </select>
-        </label>
+      <div className="grid grid-cols-2 gap-3">
+        <IgrSelect label="AI provider" value={provider} onChange={(e) => onProvider(e.detail.value as ProviderId)}>
+          {PROVIDER_IDS.map((id) => (
+            <IgrSelectItem key={id} value={id}>
+              {PROVIDERS[id].label}
+            </IgrSelectItem>
+          ))}
+        </IgrSelect>
 
         {p.models.length > 0 ? (
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">Model</span>
-            <select value={model} onChange={(e) => setModel(e.target.value)} className={FIELD + ' bg-white'}>
-              {p.models.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          </label>
+          <IgrSelect label="Model" value={model} onChange={(e) => setModel(e.detail.value)}>
+            {p.models.map((m) => (
+              <IgrSelectItem key={m} value={m}>
+                {m}
+              </IgrSelectItem>
+            ))}
+          </IgrSelect>
         ) : (
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">Deployment</span>
-            <input type="text" value={deployment} onChange={(e) => setDeployment(e.target.value)} placeholder="my-gpt-deployment" className={FIELD} />
-          </label>
+          <IgrInput
+            label="Deployment"
+            value={deployment}
+            placeholder="my-gpt-deployment"
+            onInput={(e) => setDeployment(e.detail)}
+          />
         )}
       </div>
 
       {p.needsEndpoint && (
-        <label className="mt-4 block">
-          <span className="text-sm font-medium text-slate-700">{p.label} endpoint</span>
-          <input type="text" value={endpoint} onChange={(e) => setEndpoint(e.target.value)} placeholder="https://your-resource.openai.azure.com" className={FIELD} />
-        </label>
+        <IgrInput
+          label={`${p.label} endpoint`}
+          value={endpoint}
+          placeholder="https://your-resource.openai.azure.com"
+          onInput={(e) => setEndpoint(e.detail)}
+        />
       )}
 
-      <label className="mt-4 block">
-        <span className="flex items-center justify-between text-sm font-medium text-slate-700">
-          <span className="flex items-center gap-1.5"><KeyRound className="h-3.5 w-3.5" /> {p.label} API key</span>
-          <a href={p.keysUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-normal text-violet-600 hover:underline">
-            get a key <ExternalLink className="h-3 w-3" />
-          </a>
-        </span>
-        <input
-          type="password"
-          value={apiKey}
-          onChange={(e) => setApiKey(e.target.value)}
-          placeholder={keyRequired ? p.keyPlaceholder : 'Leave blank to keep current key'}
-          className={FIELD}
-        />
-      </label>
+      <IgrInput
+        type="password"
+        label={`${p.label} API key`}
+        value={apiKey}
+        placeholder={keyRequired ? p.keyPlaceholder : 'Leave blank to keep current key'}
+        onInput={(e) => setApiKey(e.detail)}
+      >
+        <a
+          slot="helper-text"
+          href={p.keysUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 text-violet-600 hover:underline"
+        >
+          Get a key <AppIcon name="external-link" size={12} />
+        </a>
+      </IgrInput>
 
       {p.optionalEndpoint && (
-        <>
-          <button type="button" onClick={() => setShowEndpoint((s) => !s)} className="mt-3 text-xs font-medium text-slate-500 hover:text-slate-700">
+        <div className="-mt-2 flex flex-col items-start gap-2">
+          <IgrButton variant="flat" type="button" onClick={() => setShowEndpoint((s) => !s)}>
             {showEndpoint ? '− Hide' : '+ Advanced'} · local / OpenAI-compatible endpoint
-          </button>
+          </IgrButton>
           {showEndpoint && (
-            <input type="text" value={endpoint} onChange={(e) => setEndpoint(e.target.value)} placeholder="http://localhost:11434/v1" className={FIELD} />
+            <IgrInput
+              className="w-full"
+              label="Endpoint"
+              value={endpoint}
+              placeholder="http://localhost:11434/v1"
+              onInput={(e) => setEndpoint(e.detail)}
+            />
           )}
-        </>
+        </div>
       )}
 
-      <button
-        type="submit"
-        disabled={busy}
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-700 disabled:opacity-60"
-      >
-        {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+      <IgrButton type="submit" disabled={busy} className="mt-2 w-full">
+        {busy && <IgrCircularProgress slot="prefix" indeterminate hideLabel style={SPINNER_16} />}
         Save &amp; {status.configured ? 'restart' : 'start'}
-      </button>
+      </IgrButton>
 
-      <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-400">
-        <Lock className="h-3 w-3" /> Stored encrypted on this machine.
+      <p className="-mt-1 flex items-center justify-center gap-1.5 text-xs text-slate-400">
+        <AppIcon name="lock" size={12} /> Stored encrypted on this machine.
       </p>
     </form>
   );
 
   if (dismissable) {
     return (
-      <div
-        className="fixed inset-0 z-50 grid place-items-center overflow-auto bg-slate-900/40 p-6"
-        onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
-      >
-        {card}
-      </div>
+      <IgrDialog open closeOnOutsideClick hideDefaultAction className="setup-dialog" onClosed={onClose}>
+        {form}
+      </IgrDialog>
     );
   }
-  return <div className="grid h-full place-items-center overflow-auto bg-gradient-to-b from-slate-50 to-violet-50 p-6">{card}</div>;
+  return (
+    <div className="grid h-full place-items-center overflow-auto bg-gradient-to-b from-slate-50 to-violet-50 p-6">
+      <IgrCard className="setup-card w-full max-w-lg p-7">{form}</IgrCard>
+    </div>
+  );
 }
 
 function StartingScreen({ restarting }: { restarting?: boolean }) {
   return (
     <div className="fixed inset-0 z-[60] grid place-items-center bg-slate-50/95 p-6 backdrop-blur-sm">
-      <div className="flex max-w-sm flex-col items-center text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+      <div role="status" className="flex max-w-sm flex-col items-center text-center">
+        <IgrCircularProgress indeterminate hideLabel style={{ '--diameter': '32px' } as CSSProperties} />
         <h2 className="mt-4 text-lg font-semibold text-slate-900">
           {restarting ? 'Restarting…' : 'Starting up…'}
         </h2>

@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { RevealView } from 'reveal-sdk';
 import { parseDashboard } from '../lib/dashboard';
-import { uid } from '../lib/conversations';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { AppIconButton } from './AppIcon';
 
 /**
  * One live Reveal 2.0 visualization inline (singleVisualizationMode, chrome off).
@@ -15,7 +14,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
  */
 export function InlineChart({ dashboardJson }: { dashboardJson: string }) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const idRef = useRef('rv-inline-' + uid());
   const rvRef = useRef<any>(null);
   const vizRef = useRef<any[]>([]);
   const [count, setCount] = useState(0);
@@ -31,7 +29,9 @@ export function InlineChart({ dashboardJson }: { dashboardJson: string }) {
       vizRef.current = vizes;
       setCount(vizes.length);
 
-      const rv = new RevealView('#' + idRef.current);
+      // Pass the element, not an '#id' selector: this renders inside IgrChat's shadow DOM, where
+      // document.querySelector can't see it. The SDK accepts an Element despite the string typing.
+      const rv = new RevealView(hostRef.current as unknown as string);
       rv.singleVisualizationMode = true;
       rv.dashboard = dashboard;
       if (vizes.length) rv.maximizedVisualization = vizes[0];
@@ -53,35 +53,14 @@ export function InlineChart({ dashboardJson }: { dashboardJson: string }) {
 
   return (
     <div>
-      <div id={idRef.current} ref={hostRef} className="relative h-[360px] w-full" />
+      <div ref={hostRef} className="relative h-[360px] w-full" />
       {count > 1 && (
-        <div className="flex items-center justify-center gap-3 border-t border-slate-100 bg-white py-2">
-          <button
-            onClick={() => goTo(index - 1)}
-            aria-label="Previous chart"
-            className="flex h-6 w-6 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <div className="flex items-center gap-1.5">
-            {Array.from({ length: count }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goTo(i)}
-                aria-label={`Chart ${i + 1} of ${count}`}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === index ? 'w-4 bg-violet-500' : 'w-1.5 bg-slate-300 hover:bg-slate-400'
-                }`}
-              />
-            ))}
-          </div>
-          <button
-            onClick={() => goTo(index + 1)}
-            aria-label="Next chart"
-            className="flex h-6 w-6 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
+        <div className="flex items-center justify-center gap-3 border-t border-slate-100 bg-white py-1">
+          <AppIconButton name="chevron-left" aria-label="Previous chart" onClick={() => goTo(index - 1)} />
+          <span className="min-w-12 text-center text-xs tabular-nums text-slate-500" aria-live="polite">
+            {index + 1} / {count}
+          </span>
+          <AppIconButton name="chevron-right" aria-label="Next chart" onClick={() => goTo(index + 1)} />
         </div>
       )}
     </div>

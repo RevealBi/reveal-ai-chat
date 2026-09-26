@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@revealbi/api": "^1.2.45",
-    "lucide-react": "^1.21.0",
+    "igniteui-react": "^19.8.1",
+    "lucide": "^1.48.0",
     "marked": "^18.0.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
