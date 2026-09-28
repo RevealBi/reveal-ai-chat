@@ -439,25 +439,25 @@ igc-button.tips-toggle::part(base) {
 igc-button.tips-toggle:hover::part(base) {
   color: #475569;
 }
+/* Outlined chips: colors and border come from the outlined-chip tokens (igniteui-react 19.9+). */
+igc-chip.prompt-chip {
+  --ig-chip-outlined-background: #fff;
+  --ig-chip-outlined-text-color: #64748b;
+  --ig-chip-border-color: #e2e8f0;
+  --ig-chip-hover-outlined-background: #fff;
+  --ig-chip-hover-outlined-text-color: #6d28d9;
+  --ig-chip-hover-border-color: #c4b5fd;
+  --ig-chip-focus-outlined-background: #fff;
+  --ig-chip-focus-outlined-text-color: #6d28d9;
+  --ig-chip-focus-border-color: #c4b5fd;
+  --ig-radius-factor: 1;
+}
+/* Sizing only: the original 12px text in a 32px-tall pill. */
 igc-chip.prompt-chip::part(base) {
   height: auto;
   padding: 0.375rem 0.75rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 9999px;
-  background: #fff;
-  color: #64748b;
   font-size: 12px;
   line-height: 1rem;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-igc-chip.prompt-chip:hover::part(base) {
-  border-color: #c4b5fd;
-  color: #6d28d9;
-}
-igc-chip.prompt-chip[disabled]::part(base) {
-  opacity: 0.5;
-  cursor: default;
 }
 
 /* Dashboard card inside an assistant turn. */

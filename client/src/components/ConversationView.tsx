@@ -406,7 +406,7 @@ export function ConversationView() {
           <div slot="suggestions" className="flex flex-wrap gap-2 pt-1.5">
             {tipsOpen &&
               dataset.prompts.map((p, i) => (
-                <IgrChip key={i} className="prompt-chip" disabled={busy} onClick={() => submit(p)}>
+                <IgrChip key={i} outlined className="prompt-chip" disabled={busy} onClick={() => submit(p)}>
                   {p}
                 </IgrChip>
               ))}
