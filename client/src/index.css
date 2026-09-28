@@ -162,8 +162,8 @@ igc-avatar.assistant-avatar::part(base) {
 
 /* ---- Sidebar: a relative nav drawer that collapses to a mini rail. ---- */
 .app-sidebar {
-  --menu-full-width: 244px;
-  --menu-mini-width: 3.5rem;
+  --ig-nav-drawer-size: 244px;
+  --ig-nav-drawer-size--mini: 3.5rem;
   --ig-nav-drawer-background: #f8fafc; /* slate-50 */
   --ig-nav-drawer-border-color: #e2e8f0;
   --ig-nav-drawer-item-text-color: #475569;
@@ -175,6 +175,11 @@ igc-avatar.assistant-avatar::part(base) {
   --ig-nav-drawer-item-active-icon-color: #6d28d9;
   --ig-nav-drawer-item-header-text-color: #94a3b8;
   height: 100%;
+}
+/* Collapsed, the full drawer only slides under the rail; hide it so its content can't show through
+   the rail and its controls drop out of the Tab order. */
+.app-sidebar:not([open])::part(base) {
+  visibility: hidden;
 }
 .app-sidebar::part(main),
 .app-sidebar::part(mini) {
