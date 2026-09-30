@@ -17,7 +17,6 @@ import { md } from '../lib/md';
 import { titleFrom, uid, type ChatMessage } from '../lib/conversations';
 import { useAiSettings } from '../lib/aiSettings';
 import { providerLabel } from '../lib/setup';
-import { adoptDocumentStyles, adoptDocumentStylesIn } from '../lib/shadowStyles';
 import { clearAll, load, save } from '../lib/storage';
 import { InlineChart } from './InlineChart';
 import { AppIcon } from './AppIcon';
@@ -30,6 +29,19 @@ interface StreamState {
 /** Id of the chat message that shows the assistant reply while it streams in. */
 const STREAM_ID = '__stream';
 const NO_MESSAGES: ChatMessage[] = [];
+
+// `adoptRootStyles` covers the message and input shadow roots but not the chat's own, which holds
+// the suggestions list. This is the one page rule that root needs; being static, it never rebuilds.
+let suggestionsSheet: CSSStyleSheet | undefined;
+function getSuggestionsSheet(): CSSStyleSheet {
+  if (!suggestionsSheet) {
+    suggestionsSheet = new CSSStyleSheet();
+    suggestionsSheet.replaceSync(
+      "[part~='suggestions-container'] igc-list { width: 100%; max-width: none; padding: 0; }",
+    );
+  }
+  return suggestionsSheet;
+}
 
 /**
  * State and actions the IgrChat renderers read. IgrChat captures renderer functions once and only
@@ -58,6 +70,9 @@ function useChatUi(): ChatUi {
 // rendered here (text, markdown, assistant avatar, dashboard card).
 const BASE_OPTIONS: IgrChatOptions = {
   currentUserId: 'user',
+  // Mirror page styles (Tailwind, the .md rules, and the <style> tags Reveal adds later for
+  // tooltips/legends) into the message and input shadow roots, kept in sync as <head> changes.
+  adoptRootStyles: true,
   disableInputAttachments: true,
   // Suggestions go below the input in the DOM; CSS moves them above it (see index.css).
   suggestionsPosition: 'below-input',
@@ -126,7 +141,7 @@ function MessageContent({ id, chat }: { id: string; chat: IgrChat }) {
 
   if (msg?.role === 'error')
     return (
-      <div ref={adoptDocumentStyles} role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-[13px] text-red-700">
+      <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-[13px] text-red-700">
         {msg.text}
       </div>
     );
@@ -136,7 +151,7 @@ function MessageContent({ id, chat }: { id: string; chat: IgrChat }) {
   const html = streaming ? stream?.html : msg?.html;
   const lastLog = streaming && !html ? stream?.logs.at(-1) : undefined;
   return (
-    <div ref={adoptDocumentStyles} className="flex gap-3">
+    <div className="flex gap-3">
       <AssistantAvatar />
       <div className="min-w-0 flex-1">
         {lastLog && (
@@ -189,20 +204,15 @@ export function ConversationView() {
     if (send(text) && chatRef.current) chatRef.current.draftMessage = { text: '', attachments: [] };
   }
 
-  // The chat's own shadow roots (chat + input) hold the suggestions list and text box internals;
-  // mirror page styles into them so index.css can style those (see "IgrChat internals" there).
+  // Adds the suggestions rule to the chat's own shadow root (see getSuggestionsSheet).
   const chatRefCallback = (el: IgrChat | null) => {
     chatRef.current = el;
-    if (!el?.shadowRoot) return;
-    const releases = [adoptDocumentStylesIn(el.shadowRoot)];
-    let disposed = false;
-    void el.updateComplete.then(() => {
-      const input = el.shadowRoot?.querySelector('igc-chat-input');
-      if (!disposed && input?.shadowRoot) releases.push(adoptDocumentStylesIn(input.shadowRoot));
-    });
+    const root = el?.shadowRoot;
+    if (!root) return;
+    const sheet = getSuggestionsSheet();
+    root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
     return () => {
-      disposed = true;
-      releases.forEach((r) => r());
+      root.adoptedStyleSheets = root.adoptedStyleSheets.filter((s) => s !== sheet);
       chatRef.current = null;
     };
   };

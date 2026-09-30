@@ -28,7 +28,7 @@
 }
 
 /* Tailwind's preflight applies this font to `html` and `:host` — the latter matters inside the
-   IgrChat shadow roots (see lib/shadowStyles.ts), where `body`'s font would otherwise be overridden. */
+   IgrChat shadow roots (IgrChat's `adoptRootStyles`), where `body`'s font would otherwise be overridden. */
 @theme {
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
@@ -385,13 +385,10 @@ igc-chat::part(input-container) {
   min-width: 0;
 }
 
-/* IgrChat internals. These selectors only match inside the chat's own shadow roots, where
-   lib/shadowStyles.ts mirrors this stylesheet (the parts above can't reach one level deeper). */
-[part~='suggestions-container'] igc-list {
-  width: 100%;
-  max-width: none;
-  padding: 0;
-}
+/* IgrChat input internals. These selectors only match inside the input's shadow root, where
+   IgrChat's `adoptRootStyles` mirrors this stylesheet (the parts above can't reach one level
+   deeper). The suggestions list sits in the chat's own root, which that option doesn't cover —
+   its rule lives in ConversationView (getSuggestionsSheet). */
 igc-textarea[part~='text-input']::part(input) {
   padding: 0.375rem 0;
   border: 0;
