@@ -1,5 +1,38 @@
 @import "tailwindcss";
 
+/* Preflight's first rule resets margin/padding/border on `*`, which includes custom elements. Page
+   styles beat a component's own `:host` styles, so it wiped the built-in spacing of Ignite UI (and
+   Reveal SDK) elements — e.g. padding-less select items. Undo it for everything, then re-apply the
+   reset to standard HTML elements only; custom elements fall back to their own :host styles. */
+@layer base {
+  * {
+    margin: revert-layer;
+    padding: revert-layer;
+    border: revert-layer;
+  }
+  :where(
+      html, body, div, span, p, a, strong, em, small, sub, sup, code, kbd, samp, pre, blockquote, hr,
+      h1, h2, h3, h4, h5, h6, ul, ol, li, menu, dl, dt, dd, figure, figcaption, img, svg, video,
+      canvas, iframe, embed, object, table, caption, thead, tbody, tfoot, tr, th, td, form, fieldset,
+      legend, label, button, input, select, textarea, optgroup, option, progress, details, summary,
+      dialog, main, header, footer, nav, section, article, aside, address
+    ),
+  ::before,
+  ::after,
+  ::backdrop,
+  ::file-selector-button {
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
+  }
+}
+
+/* Tailwind's preflight applies this font to `html` and `:host` — the latter matters inside the
+   IgrChat shadow roots (IgrChat's `adoptRootStyles`), where `body`'s font would otherwise be overridden. */
+@theme {
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
 html,
 body,
 #root {
@@ -11,6 +44,453 @@ body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Ignite UI: brand palette (every shade derives from these -500 seeds) and font. ---- */
+:root {
+  --ig-font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --ig-primary-500: #7c3aed; /* violet-600 */
+  --ig-secondary-500: #4f46e5; /* indigo-600 */
+  --ig-gray-500: hsl(215.38, 16.32%, 62%); /* slate */
+  --ig-error-500: #dc2626;
+  /* Compact controls to match the app's type scale. */
+  --ig-size: var(--ig-size-small);
+  /* One roundness for every Ignite UI component: each scales its own max radius by this factor
+     (buttons/inputs 8px, cards/list items ~10px, dialog ~14px). */
+  --ig-radius-factor: 0.4;
+}
+
+/* ---- Component styles, via each component's public ::part() and theme tokens, tuned to the
+   app's original look (Tailwind slate/violet). ---- */
+
+/* Flat icon buttons: quiet slate icons that darken on hover. */
+igc-icon-button[variant='flat'] {
+  --ig-flat-icon-button-foreground: #94a3b8;
+  --ig-flat-icon-button-hover-foreground: #334155;
+  --ig-flat-icon-button-hover-background: #f1f5f9;
+  --ig-flat-icon-button-focus-foreground: #334155;
+  --ig-icon-size: 16px;
+}
+
+/* Outlined text buttons (header actions, New chat, starter prompt cards). */
+igc-button.header-btn::part(base),
+igc-button.sidebar-new::part(base),
+igc-button.prompt-card::part(base) {
+  min-width: 0;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+igc-button.header-btn::part(base) {
+  height: 1.875rem;
+  padding: 0 0.75rem;
+  gap: 0.375rem;
+}
+igc-button.sidebar-new::part(base) {
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  font-size: 13px;
+  color: #334155;
+}
+igc-button.sidebar-new {
+  --ig-icon-size: 16px;
+  color: #7c3aed; /* icon */
+}
+igc-button.prompt-card::part(base) {
+  height: 100%;
+  min-height: 2.875rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  justify-content: flex-start;
+  text-align: left;
+  white-space: normal;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+igc-button.header-btn:hover::part(base),
+igc-button.sidebar-new:hover::part(base),
+igc-button.prompt-card:hover::part(base) {
+  border-color: #c4b5fd;
+  color: #6d28d9;
+}
+
+/* Tokens pill in the header. */
+igc-badge.tokens-badge::part(base) {
+  box-shadow: none;
+  height: auto;
+  min-width: 0;
+  padding: 0.25rem 0.625rem;
+  border: 0;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1rem;
+}
+
+/* Avatars: user initials (sidebar) and the assistant mark (chat). */
+igc-avatar.user-avatar::part(base) {
+  width: 1.75rem;
+  height: 1.75rem;
+  min-width: 1.75rem;
+  background: #ede9fe;
+  color: #6d28d9;
+  font-size: 11px;
+  font-weight: 500;
+}
+igc-avatar.user-avatar::part(initials) {
+  font-size: 11px;
+  font-weight: 500;
+}
+igc-avatar.assistant-avatar::part(base) {
+  width: 1.75rem;
+  height: 1.75rem;
+  min-width: 1.75rem;
+  border-radius: 0.5rem;
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+/* ---- Sidebar: a relative nav drawer that collapses to a mini rail. ---- */
+.app-sidebar {
+  --ig-nav-drawer-size: 244px;
+  --ig-nav-drawer-size--mini: 3.5rem;
+  --ig-nav-drawer-background: #f8fafc; /* slate-50 */
+  --ig-nav-drawer-border-color: #e2e8f0;
+  --ig-nav-drawer-item-text-color: #475569;
+  --ig-nav-drawer-item-icon-color: #475569;
+  --ig-nav-drawer-item-hover-background: #f1f5f9;
+  --ig-nav-drawer-item-hover-text-color: #475569;
+  --ig-nav-drawer-item-active-background: #f5f3ff; /* violet-50 */
+  --ig-nav-drawer-item-active-text-color: #6d28d9;
+  --ig-nav-drawer-item-active-icon-color: #6d28d9;
+  --ig-nav-drawer-item-header-text-color: #94a3b8;
+  height: 100%;
+}
+/* Collapsed, the full drawer only slides under the rail; hide it so its content can't show through
+   the rail and its controls drop out of the Tab order. */
+.app-sidebar:not([open])::part(base) {
+  visibility: hidden;
+}
+.app-sidebar::part(main),
+.app-sidebar::part(mini) {
+  height: 100%;
+  padding: 0;
+}
+.app-sidebar igc-nav-drawer-header-item {
+  padding: 0.25rem 0.5rem;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.app-sidebar igc-nav-drawer-item {
+  cursor: pointer;
+  font-size: 13px;
+}
+.app-sidebar igc-nav-drawer-item::part(base) {
+  height: auto;
+  min-height: 0;
+  padding-block: 0.375rem;
+  margin: 0;
+  padding-inline: 0.5rem;
+  gap: 0.5rem;
+}
+.app-sidebar igc-nav-drawer-item::part(icon) {
+  --ig-icon-size: 14px;
+  opacity: 0.7;
+}
+.app-sidebar igc-nav-drawer-item::part(content) {
+  min-width: 0;
+  flex: 1;
+}
+.app-sidebar igc-nav-drawer-item igc-icon-button::part(base) {
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+}
+.app-sidebar igc-nav-drawer-item igc-icon-button {
+  --ig-icon-size: 14px;
+  --ig-flat-icon-button-hover-foreground: #ef4444;
+  --ig-flat-icon-button-hover-background: transparent;
+}
+.app-sidebar igc-select::part(suffix),
+.app-sidebar igc-select::part(toggle-icon) {
+  background: #fff;
+  color: #94a3b8;
+}
+.app-sidebar igc-select::part(label) {
+  padding-inline: 0.25rem;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 500;
+}
+.app-sidebar igc-select {
+  --ig-body-1-font-size: 12px;
+  --ig-subtitle-1-font-size: 12px;
+  --ig-input-group-border-color: #e2e8f0;
+  --ig-input-group-hover-border-color: #cbd5e1;
+  --ig-input-group-focused-border-color: #a78bfa;
+  --ig-input-group-focused-secondary-color: transparent;
+  --ig-input-group-input-suffix-background: #fff;
+  --ig-input-group-input-suffix-background--focused: #fff;
+  --ig-input-group-input-suffix-color: #94a3b8;
+}
+
+/* ---- Setup / AI settings form: the original 14px fields with a violet focus ring. ---- */
+.setup-form {
+  --ig-body-1-font-size: 14px;
+  --ig-subtitle-1-font-size: 14px;
+  --ig-input-group-border-color: #cbd5e1;
+  --ig-input-group-hover-border-color: #94a3b8;
+  --ig-input-group-focused-border-color: #8b5cf6;
+  --ig-input-group-focused-secondary-color: #ddd6fe;
+  --ig-input-group-input-suffix-background: #fff;
+  --ig-input-group-input-suffix-background--focused: #fff;
+  --ig-input-group-input-suffix-color: #94a3b8;
+}
+.setup-form igc-input::part(label),
+.setup-form igc-select::part(label),
+.setup-form igc-textarea::part(label) {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 500;
+}
+.setup-form igc-select::part(suffix),
+.setup-form igc-select::part(toggle-icon) {
+  background: #fff;
+}
+.setup-form igc-button[type="submit"]::part(base) {
+  height: 2.5rem;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.setup-form igc-button[variant="flat"]::part(base) {
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.setup-form igc-button[variant="flat"]:hover::part(base) {
+  color: #334155;
+}
+igc-dialog.setup-dialog::part(base) {
+  width: 100%;
+  max-width: 32rem;
+  background: #fff;
+}
+igc-card.setup-card {
+  background: #fff;
+}
+
+/* No docked dashboard: the splitter's end pane is collapsed, so hide its bar too. */
+.app-splitter.no-panel::part(splitter-bar) {
+  display: none;
+}
+
+/* ---- Chat (IgrChat) ---- */
+igc-chat {
+  --ig-chat-background: #fff;
+  --ig-chat-header-background: #fff;
+}
+/* Centered column: max-w-3xl (48rem) including the 1.5rem side padding the chat applies. */
+igc-chat::part(chat-container) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 48rem) minmax(0, 1fr);
+}
+igc-chat::part(header) {
+  min-height: 3rem;
+  gap: 0.75rem;
+  padding-inline: 1.25rem;
+  box-shadow: none;
+  border-bottom: 1px solid #e2e8f0;
+}
+igc-chat::part(message-list) {
+  padding-block: 1.5rem;
+  gap: 1.25rem;
+}
+/* Received turns (assistant, errors) have no bubble and span the column; the renderer draws the
+   avatar row. User turns are the chat's "sent" bubbles, styled after the original. */
+igc-chat::part(message-container) {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+igc-chat::part(message-sent) {
+  width: fit-content;
+  max-width: 80%;
+  margin-inline-start: auto;
+  padding: 0.625rem 1rem;
+  border-radius: 1rem 1rem 0.375rem 1rem;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.625;
+}
+/* "Try asking" chips: rendered below the input in the DOM, shown above it like the original. */
+igc-chat::part(suggestions-container) {
+  order: -1;
+  padding-inline: clamp(0px, (51rem - 100cqi) / 2, 1.5rem);
+  padding-top: 0.5rem;
+  margin-bottom: -0.5rem;
+}
+igc-chat::part(suggestions-header) {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+}
+/* The input: one rounded box holding the text box and the send button side by side. */
+igc-chat::part(input-area) {
+  /* The chat gives this box width: 100% plus our side margin; fill the space between the margins
+     instead, and allow shrinking, so it can never run past the chat's right edge. */
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-inline: clamp(0px, (51rem - 100cqi) / 2, 1.5rem);
+  padding: 0.625rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+igc-chat::part(input-area):focus-within {
+  border-color: #a78bfa;
+}
+igc-chat::part(input-container) {
+  flex: 1;
+  min-width: 0;
+}
+
+/* IgrChat input internals. These selectors only match inside the input's shadow root, where
+   IgrChat's `adoptRootStyles` mirrors this stylesheet (the parts above can't reach one level
+   deeper). The suggestions list sits in the chat's own root, which that option doesn't cover —
+   its rule lives in ConversationView (getSuggestionsSheet). */
+igc-textarea[part~='text-input']::part(input) {
+  padding: 0.375rem 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  color: #1e293b;
+  font-size: 15px;
+  line-height: 1.5;
+}
+igc-textarea[part~='text-input']::part(container) {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+igc-icon-button[part~='send-button'] {
+  --ig-icon-size: 20px;
+}
+igc-icon-button[part~='send-button']::part(base) {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.75rem;
+  background: #7c3aed;
+  color: #fff;
+  transition: background 0.15s, opacity 0.15s;
+}
+igc-icon-button[part~='send-button']:hover::part(base) {
+  background: #6d28d9;
+}
+igc-icon-button[part~='send-button'][disabled]::part(base) {
+  opacity: 0.4;
+  background: #7c3aed;
+  color: #fff;
+}
+
+/* "Try asking" toggle and chips. */
+igc-button.tips-toggle::part(base) {
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  gap: 0.25rem;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+igc-button.tips-toggle:hover::part(base) {
+  color: #475569;
+}
+/* Outlined chips: colors and border come from the outlined-chip tokens (igniteui-react 19.9+). */
+igc-chip.prompt-chip {
+  --ig-chip-outlined-background: #fff;
+  --ig-chip-outlined-text-color: #64748b;
+  --ig-chip-border-color: #e2e8f0;
+  --ig-chip-hover-outlined-background: #fff;
+  --ig-chip-hover-outlined-text-color: #6d28d9;
+  --ig-chip-hover-border-color: #c4b5fd;
+  --ig-chip-focus-outlined-background: #fff;
+  --ig-chip-focus-outlined-text-color: #6d28d9;
+  --ig-chip-focus-border-color: #c4b5fd;
+  --ig-radius-factor: 1;
+}
+/* Sizing only: the original 12px text in a 32px-tall pill. */
+igc-chip.prompt-chip::part(base) {
+  height: auto;
+  padding: 0.375rem 0.75rem;
+  font-size: 12px;
+  line-height: 1rem;
+}
+
+/* Dashboard card inside an assistant turn. */
+igc-card.dashboard-card {
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+  overflow: hidden;
+}
+igc-card.dashboard-card igc-card-content {
+  padding: 0;
+}
+igc-button.card-action {
+  --ig-icon-size: 14px;
+}
+igc-button.card-action::part(base) {
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  gap: 0.25rem;
+  background: transparent;
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+igc-button.card-action:hover::part(base) {
+  color: #6d28d9;
+}
+igc-button.card-action[disabled]::part(base) {
+  opacity: 0.4;
 }
 
 /* Anything clickable reads as clickable (Tailwind v4 drops this by default). */
